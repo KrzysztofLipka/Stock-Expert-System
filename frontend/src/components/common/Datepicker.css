@@ -1,0 +1,25 @@
+[type="date"] {
+    background:#fff url(https://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/calendar_2.png)  97% 50% no-repeat ;
+    height: 40px;
+    border: 1px solid #E8EAED;
+  }
+  [type="date"]::-webkit-inner-spin-button {
+    display: none;
+  }
+  [type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+  }
+
+
+  [type="date"]::-webkit-datetime-edit-day-field {
+    font-family: 'Roboto', sans-serif;
+  }
+
+  
+
+  .datePicker {
+    height: 40px;
+    padding: 5px 10px;
+    
+  }
+  
