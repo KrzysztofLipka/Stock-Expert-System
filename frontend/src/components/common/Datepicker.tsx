@@ -3,8 +3,6 @@ import './Datepicker.css';
 
 
 export interface DatepickerProps {
-    //options: string[],
-    //selectedOption: string
     name: string,
     setDate(date: string): void,
     value?: string,
@@ -16,7 +14,6 @@ const getCurrentDate = (): string => {
     let dd = today.getDate();
 
     let mm = today.getMonth() + 1;
-    //let mm = mmn.toString()
     var yyyy = today.getFullYear();
 
 
