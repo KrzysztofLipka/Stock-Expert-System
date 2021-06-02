@@ -14,7 +14,8 @@ export interface SelectedPredictionDetails {
 export interface LoadPredictionDetailsRequest {
     ticker: string,
     timeRange: string,
-    startDate?: string
+    startDate?: string,
+    predictionModel?: string
 }
 
 
@@ -72,14 +73,14 @@ export const predictions = createModel<IRootModel>()({
             dispatch.predictions.setIsLoading(true);
             //const prediction: SelectedPredictionDetails = await getQuotesForTicker(request.ticker, request.timeRange);
             try {
-                const prediction: SelectedPredictionDetails | undefined = await (await repo.getPredictionsForTicker(request.ticker, request.timeRange, "", request.startDate)).parsedBody;
+                const prediction: SelectedPredictionDetails | undefined = await (await repo.getPredictionsForTicker(request.ticker, request.timeRange, request.predictionModel, request.startDate)).parsedBody;
 
                 if (prediction) {
                     console.log('add');
                     prediction.predictions.forEach(prediction => prediction.date = splitFormattedDateOnT(prediction.date));
                     dispatch.predictions.addCompany(prediction);
-                    //const updatedHistoricalPredictions = await getHistoricalPredictions();
-                    //dispatch.predictions.addHistoricalPredictions(updatedHistoricalPredictions);
+                    const updatedHistoricalPredictions = await getHistoricalPredictions();
+                    dispatch.predictions.addHistoricalPredictions(updatedHistoricalPredictions);
                 }
             } catch {
 

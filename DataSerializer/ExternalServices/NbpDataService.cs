@@ -16,7 +16,7 @@ namespace DataSerializer
 
 
         public static async Task<List<NbpRate>> GetRatesForCurrencyPair(string currencyPair) {
-            string url = $"http://api.nbp.pl/api/exchangerates/rates/a/{currencyPair}/2012-01-01/2012-12-31/?format=json";
+            string url = $"http://api.nbp.pl/api/exchangerates/rates/a/{currencyPair}/2020-01-01/2020-11-11/?format=json";
 
             using (HttpResponseMessage response = await ApiHelper.ApiClient.GetAsync(url)) {
                 if (response.IsSuccessStatusCode) {

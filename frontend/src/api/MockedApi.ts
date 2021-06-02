@@ -76,17 +76,17 @@ export async function getQuotesForTicker(ticker: string, range: string): Promise
 const state: HistoricalPrediction[] = [
     {
         ticker: 'PLN/USD',
-        startDate: '11.11.1111',
-        endDate: '15.11.1111',
+        startDate: '10.11.2020',
+        endDate: '22.11.2020',
         id: 'i123',
         status: 'pending'
     },
     {
         ticker: 'PLN/USD',
-        startDate: '15.11.1111',
-        endDate: '19.11.1111',
+        startDate: '05.11.2020',
+        endDate: '09.11.2020',
         id: 'i124',
-        status: 'pending'
+        status: 'expired'
     }
 ]
 
@@ -99,45 +99,45 @@ const initHistoricalPredictionsState = () => {
             ticker: 'PLN/USD',
             predictions: [
                 {
-                    date: '16.11.2020',
+                    date: '10.11.2020',
                     predictedPrice: 5.0013,
                     actualPrice: 5.0021
                 }, {
-                    date: '17.11.2020',
+                    date: '11.11.2020',
                     predictedPrice: 5.0213,
                     actualPrice: 5.0092
                 }, {
-                    date: '18.11.2020',
+                    date: '12.11.2020',
                     predictedPrice: 5.0013
                 }, {
-                    date: '19.11.2020',
+                    date: '13.11.2020',
                     predictedPrice: 5.0027
                 }, {
-                    date: '20.11.2020',
+                    date: '14.11.2020',
                     predictedPrice: 5.0016
                 }, {
-                    date: '21.11.2020',
+                    date: '15.11.2020',
                     predictedPrice: 5.0273
                 }, {
-                    date: '22.11.2020',
+                    date: '16.11.2020',
                     predictedPrice: 5.0283
                 }, {
-                    date: '23.11.2020',
+                    date: '17.11.2020',
                     predictedPrice: 5.0283
                 }, {
-                    date: '24.11.2020',
+                    date: '18.11.2020',
                     predictedPrice: 5.0243
                 }, {
-                    date: '25.11.2020',
+                    date: '19.11.2020',
                     predictedPrice: 5.0213
                 }, {
-                    date: '26.11.2020',
+                    date: '20.11.2020',
                     predictedPrice: 5.0263
                 }, {
-                    date: '27.11.2020',
+                    date: '21.11.2020',
                     predictedPrice: 5.0293
                 }, {
-                    date: '28.11.2020',
+                    date: '22.11.2020',
                     predictedPrice: 5.0221
                 }
 
@@ -149,23 +149,23 @@ const initHistoricalPredictionsState = () => {
             ticker: 'PLN/USD',
             predictions: [
                 {
-                    date: '15.11.2020',
+                    date: '05.11.2020',
                     predictedPrice: 13.00,
                     actualPrice: 12.22
                 }, {
-                    date: '16.11.2020',
+                    date: '06.11.2020',
                     predictedPrice: 14.00,
                     actualPrice: 11.20
                 }, {
-                    date: '17.11.2020',
+                    date: '07.11.2020',
                     predictedPrice: 11.00,
                     actualPrice: 10.25
                 }, {
-                    date: '18.11.2020',
+                    date: '08.11.2020',
                     predictedPrice: 11.00,
                     actualPrice: 10.25
                 }, {
-                    date: '19.11.2020',
+                    date: '09.11.2020',
                     predictedPrice: 11.00,
                     actualPrice: 10.25
                 }

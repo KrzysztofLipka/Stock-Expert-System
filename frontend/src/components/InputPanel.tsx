@@ -84,7 +84,10 @@ export const InputPanel = (): JSX.Element => {
 
 
 
-                <button disabled={isEstimateButtonDisabled()} className={'button'} onClick={() => dispatch.predictions.loadPredictionDetails({ ticker: tickers.selectedTicker, timeRange: timeRanges.selectedRange, startDate: predictionStartDate.format() ?? null })}>Add</button>
+                <button
+                    disabled={isEstimateButtonDisabled()}
+                    className={'button'}
+                    onClick={() => dispatch.predictions.loadPredictionDetails({ ticker: tickers.selectedTicker, timeRange: timeRanges.selectedRange, startDate: predictionStartDate.format() ?? null, predictionModel: predictionModels.selectedModel })}>Add</button>
                 <h4>Today is {mockedCurrentDate.format('YYYY-MM-DD')}</h4>
 
             </div>

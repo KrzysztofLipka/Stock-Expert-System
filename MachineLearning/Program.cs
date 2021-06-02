@@ -11,7 +11,7 @@ namespace MachineLearning
         {
             var context = new MLContext();
 
-            var data = context.Data.LoadFromTextFile<NbpData>("./test.csv", 
+            var data = context.Data.LoadFromTextFile<NbpData>("../../../../MLModels/GPW_GPB.csv", 
                 hasHeader: false, 
                 separatorChar: ',');
 

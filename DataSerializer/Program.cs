@@ -18,7 +18,7 @@ namespace DataSerializer
         {
             ApiHelper.InitClient();
             var res = await LoadFromNbpService("GBP");
-            res.ForEach(r => CsvWriter.AddRecord("GPW_GPB.csv", r));
+            res.ForEach(r => CsvWriter.AddRecord("../../../../MLModels/GPW_GPB.csv", r));
 
         }
 
