@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,11 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AlphaVantage.Net.Stocks" Version="2.0.2" />
     <PackageReference Include="Microsoft.ML" Version="1.5.5" />
     <PackageReference Include="Microsoft.ML.TimeSeries" Version="1.5.5" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Externals\Externals.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\StockExpertSystemBackendML.Model\StockExpertSystemBackendML.Model.csproj" />
   </ItemGroup>
 

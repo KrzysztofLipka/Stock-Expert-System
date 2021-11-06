@@ -2,6 +2,9 @@
 using Microsoft.ML;
 using MachineLearning.DataModels;
 using Microsoft.ML.Transforms.TimeSeries;
+using MachineLearning.Trainers;
+using System.Collections.Generic;
+using Externals;
 
 namespace MachineLearning
 {
@@ -9,36 +12,36 @@ namespace MachineLearning
     {
         static void Main(string[] args)
         {
-            var context = new MLContext();
+           
+            //ApiHelper.InitClient();
+            //var i = AlphaVantageService.GetRatesForStock("AAPL");
 
-            var data = context.Data.LoadFromTextFile<NbpData>("../../../../MLModels/GPW_GPB.csv", 
-                hasHeader: false, 
-                separatorChar: ',');
+            //StoqqService service = new StoqqService();
 
-            var pipeline = context.Forecasting.ForecastBySsa(
-                "Forecast",
-               nameof(NbpData.ExchangeRate),
-               windowSize: 5,
-               seriesLength: 10,
-               trainSize: 100,
-               horizon: 4);
+            //service.getGata();
 
-            var model = pipeline.Fit(data);
+            ForecastBySsa forecast = new ForecastBySsa();
 
-            var forecastingEngine = model.CreateTimeSeriesEngine<NbpData, NbpForecastOutput>(context);
-
-            var forecasts = forecastingEngine.Predict();
-
-            foreach (var forecast in forecasts.Forecast)
-            {
-                Console.WriteLine(forecast);
-            }
-
-            forecastingEngine.CheckPoint(context, "../../../../MLModels/forecast_model.zip");
-
-            Console.ReadLine();
+            forecast.Predict("../../../../MLModels/GPW_GPB.csv", 
+                            "../../../../MLModels/forecast_model.zip", "AAPL");
 
 
+            //double[] realvalues =  new double[] { 5.0087, 5.0072, 4.9761, 5.0092, 5.0013 };
+            //var mlContext = new MLContext();
+
+            //var testSetTransform = trainedModel.Transform(dataSplit.TestSet);
+
+            //var metrics = mlContext.MulticlassClassification.Evaluate();
+
+
+            //forecast.UpdateModel(new NbpData[] {
+            //    new NbpData(){
+            //        Date = "1111111",
+            //        ExchangeRate = 123
+            //    }
+            //}, "../../../../MLModels/forecast_model.zip"); 
+
+            Console.ReadKey();
 
         }
     }

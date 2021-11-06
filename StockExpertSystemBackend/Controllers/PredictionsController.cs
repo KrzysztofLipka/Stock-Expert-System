@@ -35,19 +35,25 @@ namespace StockExpertSystemBackend.Controllers
             {
                 return GetForecastPrediction(request.Ticker);
             }
-            else {
+            else if (request.PredictionModel == "LbfgsPoissonRegression") {
+                return getLbfsgRegression();
+            }
+            else
+            {
                 var input = new ModelInput();
                 input.Col0 = "11.11.2012 00:00:00";
                 //ModelOutput output = ConsumeModel.Predict(input);
 
                 var dates = DateUtils.EachCalendarDayInRange(request.StartDate, DateUtils.ConvertDateRangeToNumberOfDays(request.Range));
 
-                var res = new PredictionResponse() {
+                var res = new PredictionResponse()
+                {
                     Ticker = request.Ticker,
                     Predictions = new List<PredictionPoint>(0)
                 };
 
-                foreach (var date in dates) {
+                foreach (var date in dates)
+                {
                     var input1 = new ModelInput();
                     input1.Col0 = date.ToString("MM.dd.yyyy HH:mm:ss");
                     ModelOutput output1 = ConsumeModel.Predict(input1);
@@ -59,7 +65,7 @@ namespace StockExpertSystemBackend.Controllers
                 }
 
                 return res;
-                
+
 
             }
         }
@@ -107,6 +113,43 @@ namespace StockExpertSystemBackend.Controllers
             };
         }
 
+        private PredictionResponse getLbfsgRegression() {
+            MLContext ml = new MLContext();
+            ITransformer model;
+
+            using (var file = System.IO.File.OpenRead("../../../../MLModels/LbfgsPoissonRegression.zip"))
+                model = ml.Model.Load(file, out DataViewSchema schema);
+
+            var predictionEngine = ml.Model.CreatePredictionEngine<NbpDataRaw, NbpForecastOutput>(model);
+
+            var t = new NbpDataRaw { Date = "2021-08-28" };
+            var res = predictionEngine.Predict(t);
+
+            return new PredictionResponse()
+            {
+                Ticker = "AALP",
+                Predictions = new List<PredictionPoint> {
+                    new PredictionPoint()
+                    {
+                        PredictedPrice =  (decimal)res.Forecast[0],
+                        Date = new DateTime(2020, 11,12)
+                    }
+                }
+
+            };
+
+
+
+
+        }
+
+
+
+
+
+
+        
+
         [HttpGet("historicalDetails/{predictionId}")]
         public ActionResult<HistoricalPredictionDetailsResponse> GetHistoricalPredictionDetails(string predictionId)
         {
@@ -147,8 +190,27 @@ namespace StockExpertSystemBackend.Controllers
                     Id = "12345"
                 }
                
-    };
+            };
         }
+
+
+        /*[HttpGet("getPredictionVisualization")]
+        public IEnumerable<HistoricalPredictionsResponse> GetHistoricalPredictions()
+        {
+            return new List<HistoricalPredictionsResponse>()
+            {
+                new HistoricalPredictionsResponse(){
+                    Ticker = "AAPL",
+                    Status = "Pending",
+                    StartDate  = new DateTime(2020, 11,24),
+                    EndDate = new DateTime(2020, 11,28),
+                    Id = "12345"
+                }
+
+            };
+        }*/
+
+
 
     }
 

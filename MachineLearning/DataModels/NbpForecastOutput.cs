@@ -7,5 +7,7 @@ namespace MachineLearning.DataModels
     public class NbpForecastOutput
     {
         public float[] Forecast { get; set; }
+
+        //public float Score { get; set; }
     }
 }

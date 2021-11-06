@@ -15,8 +15,9 @@ namespace DataSerializer
         private const string BaseUrl = "http://api.nbp.pl/api/exchangerates/rates/a/gbp/2012-01-01/2012-07-31/?format=json";
 
 
-        public static async Task<List<NbpRate>> GetRatesForCurrencyPair(string currencyPair) {
-            string url = $"http://api.nbp.pl/api/exchangerates/rates/a/{currencyPair}/2020-01-01/2020-11-11/?format=json";
+        public static async Task<List<NbpRate>> GetRatesForCurrencyPair(string symbol) {
+            //string url = $"http://api.nbp.pl/api/exchangerates/rates/a/{currencyPair}/2020-01-01/2020-11-11/?format=json";
+            string url = $"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey=demo";
 
             using (HttpResponseMessage response = await ApiHelper.ApiClient.GetAsync(url)) {
                 if (response.IsSuccessStatusCode) {
@@ -29,10 +30,5 @@ namespace DataSerializer
             }
 
         }
-
-
-
-
-
     }
 }
