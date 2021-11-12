@@ -9,6 +9,7 @@
     <PackageReference Include="AlphaVantage.Net.Stocks" Version="2.0.2" />
     <PackageReference Include="Microsoft.ML" Version="1.5.5" />
     <PackageReference Include="Microsoft.ML.TimeSeries" Version="1.5.5" />
+    <PackageReference Include="ScottPlot" Version="4.1.27" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
   </ItemGroup>
 
