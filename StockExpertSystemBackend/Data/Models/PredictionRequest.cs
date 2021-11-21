@@ -11,6 +11,8 @@ namespace StockExpertSystemBackend.Data.Models
         public DateTime StartDate { get; set; }
         public string Range { get; set; }
 
+        public int Horizon { get; set; }
+
         public string PredictionModel { get; set; }
     }
 }

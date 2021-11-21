@@ -84,6 +84,6 @@ export const HistoricalPredictionsGrid = (props: HistoricalPredictionsGridProps)
         <h3>Historical</h3>
         <div className='historical-predictions'>
             <Table data={props.predictions} columns={columns} actionOnRowClick={handleRowClick} />
-            {<div className='historical-prediction-details'>{clickedPrediction ? renderPredictionDetails(clickedPrediction) : null}</div>}
+            {<div className='historical-prediction-details'>{clickedPrediction ? renderPredictionDetails(clickedPrediction) : "BUY 2020-11-16 / SELL 2020-12-01"}</div>}
         </div></>)
 }

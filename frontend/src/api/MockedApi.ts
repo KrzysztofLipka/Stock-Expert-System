@@ -75,14 +75,14 @@ export async function getQuotesForTicker(ticker: string, range: string): Promise
 
 const state: HistoricalPrediction[] = [
     {
-        ticker: 'PLN/USD',
+        ticker: 'AAPL',
         startDate: '10.11.2020',
         endDate: '22.11.2020',
         id: 'i123',
         status: 'pending'
     },
     {
-        ticker: 'PLN/USD',
+        ticker: 'AAPL',
         startDate: '05.11.2020',
         endDate: '09.11.2020',
         id: 'i124',
@@ -231,7 +231,8 @@ export async function getTickers(): Promise<string[]> {
     await delay(3000);
 
     return [
-        'PLN/USD'
+        'AAPL',
+        'RDS-A'
     ]
 
 }

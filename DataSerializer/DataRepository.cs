@@ -12,7 +12,7 @@ namespace DataSerializer
 {
     class DataRepository : IDataRepository
     {
-        private string dbConnectionString = "todo move to unpublic config";
+        private string dbConnectionString = "";
 
         public IEnumerable<StockDataPoint> GetStockDataPoints(string StockName)
         {

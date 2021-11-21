@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="AlphaVantage.Net.Stocks" Version="2.0.2" />
+    <PackageReference Include="CNTK.GPU" Version="2.7.0" />
+    <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
     <PackageReference Include="Microsoft.ML" Version="1.5.5" />
     <PackageReference Include="Microsoft.ML.TimeSeries" Version="1.5.5" />
     <PackageReference Include="ScottPlot" Version="4.1.27" />
@@ -17,6 +19,10 @@
     <ProjectReference Include="..\Externals\Externals.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\StockExpertSystemBackendML.Model\StockExpertSystemBackendML.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Visualizaton\" />
   </ItemGroup>
 
 </Project>

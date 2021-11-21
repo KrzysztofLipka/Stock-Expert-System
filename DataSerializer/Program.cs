@@ -23,7 +23,7 @@ namespace DataSerializer
             //res.ForEach(r => CsvWriter.AddRecord("../../../../MLModels/GPW_GPB.csv", r));
             var dr = new DataRepository();
 
-            var companyId = dr.getCompanyId("AAPL");
+            var companyId = dr.getCompanyId("rds-a");
             var point = new StockDataPoint()
             {
                 OpeningPrice = 1.23M,
@@ -38,7 +38,7 @@ namespace DataSerializer
 
             StoqqService service = new StoqqService();
 
-            var res = service.getGataForBulkLoad("AAPL",companyId);
+            var res = service.getGataForBulkLoad("rds-a", companyId);
 
             dr.PostManyStockDataPoints(res);
 

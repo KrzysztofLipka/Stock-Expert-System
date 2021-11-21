@@ -22,18 +22,13 @@ namespace StockExpertSystemBackend.Controllers
     [ApiController]
     public class PredictionsController : ControllerBase
     {
-        //private readonly PredictionEnginePool<NbpData, NbpForecastOutput> _predictionEnginePool;
-        //public PredictionsController(PredictionEnginePool<NbpData, NbpForecastOutput> predictionEnginePool)
-        //{
-        //    this._predictionEnginePool = predictionEnginePool;
-        //}
-
+        
         [HttpPost]
         public ActionResult<PredictionResponse> Predict(PredictionRequest request)
         {
             if (request.PredictionModel == "Forecasting")
             {
-                return GetForecastPrediction(request.Ticker);
+                return GetForecastPrediction(request.Ticker,30);
             }
             else if (request.PredictionModel == "LbfgsPoissonRegression") {
                 return getLbfsgRegression();
@@ -70,25 +65,24 @@ namespace StockExpertSystemBackend.Controllers
             }
         }
 
-        private PredictionResponse GetForecastPrediction(string ticker) {
+        private PredictionResponse GetForecastPrediction(string ticker, int horizon) {
             MLContext ml = new MLContext();
             ITransformer model;
 
-            using (var file = System.IO.File.OpenRead("../../../../MLModels/forecast_model.zip"))
+            using (var file = System.IO.File.OpenRead("../../../../MLModels/SSA_rds-a_30_12.11.2021.zip"))
                 model = ml.Model.Load(file, out DataViewSchema schema);
 
-            var engine = model.CreateTimeSeriesEngine<NbpData,
-                NbpForecastOutput>(ml);
+            var engine = model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(ml);
 
             var ress = engine.Predict();
             Console.WriteLine(ress);
 
             //var questions = _dataRepository.GetQuestions();
-            return new PredictionResponse()
+            var res  = new PredictionResponse()
             {
                 Ticker = ticker,
                 Predictions = new List<PredictionPoint> {
-                    new PredictionPoint()
+                    /*new PredictionPoint()
                     {
                         PredictedPrice =  (decimal)ress.Forecast[0],
                         Date = new DateTime(2020, 11,12)
@@ -107,10 +101,28 @@ namespace StockExpertSystemBackend.Controllers
                     {
                         PredictedPrice =  (decimal)ress.Forecast[3],
                         Date = new DateTime(2020, 11,15)
-                    }
+                    }*/
+
                 }
 
+
+
             };
+
+            DateTime timeSeriesStartDate = new DateTime(2020, 11, 12);
+
+            int dateCounter = 1;
+
+            foreach (var forecast in ress.Forecast)
+            {
+                res.Predictions.Add(new PredictionPoint()
+                {
+                    PredictedPrice = (decimal)forecast,
+                    Date = timeSeriesStartDate.AddDays(dateCounter++)
+                });
+            }
+
+            return res;
         }
 
         private PredictionResponse getLbfsgRegression() {
