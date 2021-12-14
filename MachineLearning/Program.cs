@@ -13,11 +13,15 @@ namespace MachineLearning
     {
         static void Main(string[] args)
         {
-            const string companyName = "AAPL";
+            const string companyName = "nke";
             const int horizon = 30;
 
 
             ForecastBySsa forecast = new ForecastBySsa();
+
+            BinaryClassifier binary = new BinaryClassifier();
+
+            binary.Predict("1", "2", "nke",2000);
 
             double mae;
             double rmse;
@@ -35,7 +39,8 @@ namespace MachineLearning
 
                 };
 
-                forecast.Predict("../../../../MLModels/.csv",
+               
+             forecast.Predict("../../../../MLModels/.csv",
                                 $"../../../../MLModels/SSA_{companyName}_{horizon}_", companyName,
                                 parameters,
                                 450,

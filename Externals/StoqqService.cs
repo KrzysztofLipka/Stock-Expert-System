@@ -12,11 +12,15 @@ namespace Externals
     public class StoqqService
     {
         //private static string url = "https://stooq.pl/q/d/l/?s=aapl.us&i=d";
-        public List<StockDataPointDb> getGataForBulkLoad(string companyName, int companyId) {
+        public List<StockDataPointDb> getGataForBulkLoad(string companyName, int companyId,bool isIndex = false) {
 
-            string url = $"https://stooq.pl/q/d/l/?s={companyName}.us&i=d";
+            string url = !isIndex 
+                ? $"https://stooq.pl/q/d/l/?s={companyName}.us&i=d"
+                : $"https://stooq.pl/q/d/l/?s={companyName}&i=d"
+            ;
             //https://stooq.pl/q/d/l/?s=rds-a.us&i=d
             //https://stooq.pl/q/d/l/?s=aapl.us&d1=20210907&d2=20211117&i=d
+            //https://stooq.pl/q/d/l/?s=^ndq&i=d
             CsvHelper helper = new CsvHelper();
             var stoqqResponse = helper.GetCSV(url);
 
@@ -30,7 +34,8 @@ namespace Externals
             {
                 if (!string.IsNullOrWhiteSpace(item) && !item.Equals("Data,Otwarcie,Najwyzszy,Najnizszy,Zamkniecie,Wolumen"))
                 {
-                    var split = StoqqDataPointsToDataPointsMapper.Map(item.Split(','),companyId) ;
+                    //todo
+                    var split = StoqqDataPointsToDataPointsMapper.Map(item.Split(','),companyId, isIndex) ;
                     result.Add(split);
                 }
             }

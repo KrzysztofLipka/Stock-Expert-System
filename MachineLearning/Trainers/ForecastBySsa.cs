@@ -86,59 +86,6 @@ namespace MachineLearning.Trainers
 
             var forecastingEngine = model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);
 
-
-            //var forecasts = forecastingEngine.Predict();
-
-            //foreach (var forecast in forecasts.Forecast)
-            //{
-            //    Console.WriteLine(forecast);
-            //}
-
-
-
-            //var resAsList = forecasts.Forecast;
-
-            //double[] forecastsArray = Array.ConvertAll(resAsList, x => (double)x);
-
-            //double[] xs = new double[] { 1, 2, 3, 4, 5 };
-            //double[] ys = new double[] { 1, 4, 9, 16, 25 };
-
-            //double [] y = DataGen.Consecutive(horizon);
-            //double [] x1 = ConvertInputListToPlotArray(testList);
-            //double[] t2 = new double[7] { 154.8818, 154.829376, 151.8399, 148.420441, 147.276947, 147.315521, 149.147812 };
-
-            //var plt = new ScottPlot.Plot(1500, 500);
-            //plt.AddSignal(x1, horizon);
-
-            //plt.AddSignal(forecastsArray, horizon);
-            //plt.AddSignal(t2, horizon);
-            //plt.XAxis.Label($"windowsie: {windowSize}, seriesLength: {seriesLength}, trainSize: {trainSize}, horizon: {hor}, NumberOfLastRows = {numberOfRowsToLoad}");
-            //plt.SaveFig("console.png");
-
-          
-
-            /*var test = new List<StockDataPointInput>() {
-                new StockDataPointInput(){
-                    //Date= "11",
-                    ClosingPrice= 5.034033F
-                }, new StockDataPointInput(){
-                    //Date= "11",
-                    ClosingPrice= 5.002082F
-                }, new StockDataPointInput(){
-                    //Date= "11",
-                    ClosingPrice= 4.9799623F
-                },new StockDataPointInput(){
-                    //Date= "11",
-                    ClosingPrice= 4.9721212F
-                }
-            };*/
-
-            //var testData = context.Data.LoadFromEnumerable<StockDataPointInput>(test);
-
-
-
-            //this.Evaluate2(x1, forecastsArray);
-
             foreach (var forecast in testList)
             {
                 forecastingEngine.Predict(forecast);
@@ -206,10 +153,6 @@ namespace MachineLearning.Trainers
             string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
             string sqlCommand2 = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '03-01-2021'";
             string sqlCommand3 = $"EXEC dbo.[GetLastClosingPrices] @CompanyName = '{companyName}', @NumberOfLastRows = {numberOfRowsToLoad}";
-
-            //EXEC dbo.[GetLastClosingPrices] @CompanyName = 'AAPL', @NumberOfLastRows = 200;
-
-            //EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = 'AAPL', @MaxDate = '11-11-2020'
 
             DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
 

@@ -7,5 +7,7 @@ namespace MachineLearning.Trainers
 {
     public class LstmTrainer
     {
+        
+
     }
 }

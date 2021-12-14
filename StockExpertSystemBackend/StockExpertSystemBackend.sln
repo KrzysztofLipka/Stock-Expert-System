@@ -13,9 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockExpertSystemBackendML.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockExpertSystemBackendML.ConsoleApp", "..\StockExpertSystemBackendML.ConsoleApp\StockExpertSystemBackendML.ConsoleApp.csproj", "{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Externals", "..\Externals\Externals.csproj", "{862F7C40-8246-4EE8-94DD-71981ECEE2A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Externals", "..\Externals\Externals.csproj", "{862F7C40-8246-4EE8-94DD-71981ECEE2A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "..\Shared\Shared.csproj", "{DF9A57CD-C11A-41CF-814A-16F14C719228}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "..\Shared\Shared.csproj", "{DF9A57CD-C11A-41CF-814A-16F14C719228}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MachineLearning.Tests", "..\MachineLearning.Tests\MachineLearning.Tests.csproj", "{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{DF9A57CD-C11A-41CF-814A-16F14C719228}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF9A57CD-C11A-41CF-814A-16F14C719228}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF9A57CD-C11A-41CF-814A-16F14C719228}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
