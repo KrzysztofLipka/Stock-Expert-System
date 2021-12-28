@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using MachineLearning.Trainers;
+using MachineLearning.Util;
 using System.Collections.Generic;
 using System;
 using System.Linq;
@@ -272,11 +273,11 @@ namespace MachineLearning.Tests
 
             //Console.WriteLine(res);
 
-            foreach (var item in res)
-            {
-                Console.WriteLine(item);
-            }
-            Console.WriteLine(res.Length);
+            //foreach (var item in res)
+           // {
+            //    Console.WriteLine(item);
+            //}
+            //Console.WriteLine(res.Length);
 
             //------------------
 
@@ -365,7 +366,7 @@ namespace MachineLearning.Tests
                  new double[]{-0.04638783 }
             };
 
-            var res = Arima.DotProduct(matrix1, matrix2);
+            var res = MatrixHelpers.DotProduct(matrix1, matrix2);
             //Console.WriteLine(res);
 
             foreach(var item in res)
@@ -380,6 +381,62 @@ namespace MachineLearning.Tests
             {
                 Console.WriteLine(item[0] + 0.10585095057034244);
             }
+
+        }
+
+        [Test]
+        public void Test8() {
+            List<float> input = new List<float>() { 1, 3, 4, 7, 9 };
+            var res = MatrixHelpers.CalculateOrderDiscreteDiffrence(input);
+            foreach (var item in res)
+            {
+                Console.WriteLine(item);
+            }
+            
+        }
+
+        [Test]
+        public void Test9()
+        {
+            List<float> input = new List<float>() { 1, 3, 4, 7, 9 };
+            var res = MatrixHelpers.CalculateOrderDiscreteDiffrence(input,2);
+            foreach (var item in res)
+            {
+                Console.WriteLine(item);
+            }
+
+        }
+
+        [Test]
+        public void Test10()
+        {
+            List<double> input = new List<double>() { 1,1, 2, 3, 5, 8 };
+            var res = MatrixHelpers.CalculateDiffrence(input, 3);
+            foreach (var item in res)
+            {
+                Console.WriteLine(item);
+            }
+
+        }
+
+        [Test]
+        public void Test11()
+        {
+            double[] arr1 = new double[] { 1, 1, 2, 3, 4, 5 };
+            double[] arr2 = new double[]       { 2, 3, 4, 2 };
+            var res = Arima.SumArraysWithDiffrentSize(arr1, arr2);
+            double[] expectedRes = new double[] { 0, 0, 4, 6, 8, 7 };
+            foreach (var item in res)
+            {
+                Console.WriteLine(item);
+            }
+
+            Assert.AreEqual(expectedRes[0], res[0]);
+            Assert.AreEqual(expectedRes[1], res[1]);
+            Assert.AreEqual(expectedRes[2], res[2]);
+            Assert.AreEqual(expectedRes[3], res[3]);
+            Assert.AreEqual(expectedRes[4], res[4]);
+            Assert.AreEqual(expectedRes[5], res[5]);
 
         }
 

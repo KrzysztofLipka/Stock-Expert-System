@@ -21,7 +21,9 @@ namespace MachineLearning
 
             BinaryClassifier binary = new BinaryClassifier();
 
-            binary.Predict("1", "2", "nke",2000);
+            binary.Predict("1", "2", "nke", "^dji", 2000);
+
+            binary.Predict("1", "2", "AAPL", "^ndq", 2000);
 
             double mae;
             double rmse;
@@ -30,13 +32,6 @@ namespace MachineLearning
             ForecastBySsaParams parameters = new ForecastBySsaParams()
                 {
                     Horizon = 30,
-                    //TrainSize = i,
-                    //WindowSize = i,
-                    //SeriesLength = rowNumber
-
-
-
-
                 };
 
                
@@ -84,9 +79,6 @@ namespace MachineLearning
                     TrainSize = i,
                     WindowSize = i,
                     //SeriesLength = rowNumber
-
-
-
 
                 };
 
