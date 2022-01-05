@@ -21,8 +21,16 @@ namespace MachineLearning.Tests
         [Test]
         public void TestDotProduct()
         {
-            Arima.Solve(7, 12, inputData);
+            Arima.Solve(14, 5, inputData);
             
+
+        }
+
+        [Test]
+        public void TestDotProduct2()
+        {
+            Arima.Solve(14, 2, inputData,false);
+
 
         }
     }
