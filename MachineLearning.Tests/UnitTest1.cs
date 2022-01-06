@@ -85,8 +85,8 @@ namespace MachineLearning.Tests
 
 
             var result = Arima.Shift(1, testData);
-            List<float> resultAsFloatList = result.Select(item => item.ClosingPrice).ToList();
-            List<float> expectedResultAsFloatList = expectedResult.Select(item => item.ClosingPrice).ToList();
+            List<double> resultAsFloatList = result.Select(item => item.ClosingPrice).ToList();
+            List<double> expectedResultAsFloatList = expectedResult.Select(item => item.ClosingPrice).ToList();
             foreach (var item in result)
             {
                 Console.WriteLine(item.ClosingPrice);
@@ -132,7 +132,7 @@ namespace MachineLearning.Tests
                 Console.WriteLine(item);
             }
             //List<float> resultAsFloatList = result.Select(item => item.ClosingPrice).ToList();
-            List<float> expectedResultAsFloatList = expectedResult.Select(item => item.ClosingPrice).ToList();
+            List<double> expectedResultAsFloatList = expectedResult.Select(item => item.ClosingPrice).ToList();
             //foreach (var item in result)
             //{
             //    Console.WriteLine(item.ClosingPrice);
@@ -386,7 +386,7 @@ namespace MachineLearning.Tests
 
         [Test]
         public void Test8() {
-            List<float> input = new List<float>() { 1, 3, 4, 7, 9 };
+            List<double> input = new List<double>() { 1, 3, 4, 7, 9 };
             var res = MatrixHelpers.CalculateOrderDiscreteDiffrence(input);
             foreach (var item in res)
             {
@@ -398,7 +398,7 @@ namespace MachineLearning.Tests
         [Test]
         public void Test9()
         {
-            List<float> input = new List<float>() { 1, 3, 4, 7, 9 };
+            List<double> input = new List<double>() { 1, 3, 4, 7, 9 };
             var res = MatrixHelpers.CalculateOrderDiscreteDiffrence(input,2);
             foreach (var item in res)
             {

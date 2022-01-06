@@ -8,13 +8,13 @@ using MachineLearning.Util;
 namespace MachineLearning.Trainers
 {
     public class ArimaData {
-        public ArimaData(float closingPrice, string date)
+        public ArimaData(double closingPrice, string date)
         {
             this.ClosingPrice = closingPrice;
             this.Date = date;
         }
 
-        public ArimaData(string date, float closingPrice)
+        public ArimaData(string date, double closingPrice)
         {
             this.ClosingPrice = closingPrice;
             this.Date = date;
@@ -24,22 +24,22 @@ namespace MachineLearning.Trainers
         {
  
         }
-        public float ClosingPrice;
+        public double ClosingPrice;
         public string Date;
     }
 
     public class ArimaTrainTestSplittedData
     {
-        public List<List<float>> xTrain;
-        public List<List<float>> xTest;
-        public List<float> yTrain;
-        public List<float> yTest;
+        public List<List<double>> xTrain;
+        public List<List<double>> xTest;
+        public List<double> yTrain;
+        public List<double> yTest;
 
         public ArimaTrainTestSplittedData(
-        List<List<float>> xTrain,
-        List<List<float>> xTest,
-        List<float> yTrain,
-        List<float> yTest)
+        List<List<double>> xTrain,
+        List<List<double>> xTest,
+        List<double> yTrain,
+        List<double> yTest)
         {
             this.xTrain = xTrain;
             this.xTest = xTest;
@@ -49,12 +49,12 @@ namespace MachineLearning.Trainers
     }
 
     public class ArimaTrainData {
-        public List<List<float>> xTrain;
-        public List<float> yTrain;
+        public List<List<double>> xTrain;
+        public List<double> yTrain;
 
         public ArimaTrainData(
-            List<List<float>> xTrain, 
-            List<float> yTrain)
+            List<List<double>> xTrain, 
+            List<double> yTrain)
         {
             this.xTrain = xTrain;
             this.yTrain = yTrain;
@@ -71,12 +71,11 @@ namespace MachineLearning.Trainers
         public List<double> PredictedTestValues { get; set; }
         public double RMSE { get; set; }
         public double MAE { get; set; }
-        public List<float> RegressionResults { get; set; }
+        public List<double> RegressionResults { get; set; }
         public double[][] XTrain { get; set; }
         public double[][] XTest { get; set; }
 
         public double[][] Coefficients { get; set; }
-
 
     }
 
@@ -86,7 +85,7 @@ namespace MachineLearning.Trainers
         public List<double> PredictedTestValues { get; set; }
         public double RMSE { get; set; }
         public double MAE { get; set; }
-        public List<float> RegressionResults { get; set; }
+        public List<double> RegressionResults { get; set; }
         public double[][] XTrain { get; set; }
         public double[][] XTest { get; set; }
         public double[][] Coefficients { get; set; }
@@ -95,8 +94,8 @@ namespace MachineLearning.Trainers
 
     public static class Arima
     {
-        public static List<List<float>> CreateLaggedVectors(int p, List<ArimaData> df) {
-            List<List<float>> laggedVectors = new List<List<float>>();
+        public static List<List<double>> CreateLaggedVectors(int p, List<ArimaData> df) {
+            List<List<double>> laggedVectors = new List<List<double>>();
             for (int i = 1; i < p+1; i++)
             {
                 var shifted = ShiftFloat(i, df);
@@ -107,9 +106,9 @@ namespace MachineLearning.Trainers
 
         }
 
-        public static List<List<float>> CreateLaggedVectors(int p, IEnumerable<float> df)
+        public static List<List<double>> CreateLaggedVectors(int p, IEnumerable<double> df)
         {
-            List<List<float>> laggedVectors = new List<List<float>>();
+            List<List<double>> laggedVectors = new List<List<double>>();
             for (int i = 1; i < p + 1; i++)
             {
                 var shifted = ShiftFloat(i, df);
@@ -126,13 +125,13 @@ namespace MachineLearning.Trainers
             var stageOne = MatrixHelpers.CalculateDiffrence(inputAsFloat.ToList(), 1);
             var res = MatrixHelpers.CalculateDiffrence(stageOne,12);
             //todo remove hack
-            var res2 =  res.Select(row => new ArimaData((float)row, "Data")).ToList();
+            var res2 =  res.Select(row => new ArimaData(row, "Data")).ToList();
             res2[12].ClosingPrice = 0;
 
             return res2;
         }
 
-        public static RevertingResult RevertToOrginalData(double[] predictions,double[] orginalDiffrencedValues, IEnumerable<float> orginalValues)
+        public static RevertingResult RevertToOrginalData(double[] predictions,double[] orginalDiffrencedValues, IEnumerable<double> orginalValues)
         {
             //todo simplify
             var inputLogOrg = ShiftDouble(1, orginalValues.Select(row => Math.Log(row)));
@@ -160,31 +159,29 @@ namespace MachineLearning.Trainers
         public static void Solve(int p, int q, List<ArimaData> df) {
 
             List<ArimaData> dfLog = PrepareInputData(df);
-            int arSpitIndex = (int)((double)dfLog.Count * 0.8);
+            int arSpitIndex = (int)(dfLog.Count * 0.8);
          
             var splitedDataSet = SplitToTrainTestData(p, dfLog, arSpitIndex);
                 
 
             var autoRegressionResult = AutoRegression(p, dfLog, splitedDataSet);
 
-                     //todo
-            //List<float> residualsFloat = residuals.Skip(p).Select(x => (float)x).ToList();
-
-            List<float> skippedInitialValues = dfLog.Skip(p+13).Select(x => (float)x.ClosingPrice).ToList();
+            //todo
+            List<double> skippedInitialValues = dfLog.Skip(p+13).Select(x => x.ClosingPrice).ToList();
 
             double[] concatinatedXTrainTest = autoRegressionResult.PredictedTrainValues.Concat(autoRegressionResult.PredictedTestValues).ToArray();
 
             double[] residuals = CreateResiduals(concatinatedXTrainTest, skippedInitialValues);
 
-            int maSpitIndex = (int)((double)residuals.Count() * 0.8);
-
-            var movingAverageSplittedDataSet = SplitToTrainTestData(q, residuals.Select(res => (float)res).ToList(), maSpitIndex, false);
+            int maSpitIndex = (int)(residuals.Count() * 0.8);
+            //todo
+            var movingAverageSplittedDataSet = SplitToTrainTestData(q, residuals.Select(res =>res).ToList(), maSpitIndex, false);
  
             var movingAverageResult = MovingAverage(q, residuals, movingAverageSplittedDataSet);
 
             var concatinatedMovingAverageXTrainTest = movingAverageResult.PredictedTrainValues.Concat(movingAverageResult.PredictedTestValues).ToArray();
             var sumOfResults = SumArraysWithDiffrentSize(concatinatedXTrainTest, concatinatedMovingAverageXTrainTest);
-            var finalResult = RevertToOrginalData(sumOfResults, dfLog.Select(el=> (double)el.ClosingPrice).ToArray(), df.Select(el => el.ClosingPrice));
+            var finalResult = RevertToOrginalData(sumOfResults, dfLog.Select(el=> el.ClosingPrice).ToArray(), df.Select(el => el.ClosingPrice));
 
             //---------forecasting---------------
 
@@ -196,7 +193,7 @@ namespace MachineLearning.Trainers
 
             for (int i = 0; i < originalDataForForecast.Count() -1; i++)
             {
-                dataForForecast.Add((float)originalDataForForecast[i] - (float)originalDataForForecast[i + 1]);
+                dataForForecast.Add(originalDataForForecast[i] - originalDataForForecast[i + 1]);
             }
 
             int numberOfForecasts = 16;
@@ -229,10 +226,8 @@ namespace MachineLearning.Trainers
 
             for (int i = 0; i < originalDataForForecast2.Count() - 1; i++)
             {
-                dataForForecast2.Add((float)originalDataForForecast2[i] - (float)originalDataForForecast2[i + 1]);
+                dataForForecast2.Add(originalDataForForecast2[i] - originalDataForForecast2[i + 1]);
             }
-
-            //int numberOfForecasts = 5;
 
             for (int i = 0; i < numberOfForecasts; i++)
             {
@@ -245,8 +240,6 @@ namespace MachineLearning.Trainers
 
                 dataForForecast2.Insert(0, originalDataForForecast2[0] - originalDataForForecast2[1]);
                 dataForForecast2 = dataForForecast2.Take(dataForForecast2.Count() - 1).ToList();
-
-
             }
 
             var forecastplusErros = finalForecasts.Zip(finalForecasts2, (first, second) => first + second);
@@ -276,9 +269,9 @@ namespace MachineLearning.Trainers
             return result.ToArray();
         }
 
-        public static float[] SumArraysWithDiffrentSize(float[] firstArray, float[] secondArray)
+        /*public static double[] SumArraysWithDiffrentSize(double[] firstArray, double[] secondArray)
         {
-            List<float> result = new List<float>();
+            List<double> result = new List<double>();
             int coundDiference = firstArray.Length - secondArray.Length;
             //result.InsertRange(0, new double[firstArray.Length - secondArray.Length]);
             for (int i = 0; i < firstArray.Length; i++)
@@ -295,24 +288,24 @@ namespace MachineLearning.Trainers
 
             return result.ToArray();
 
-        }
+        }*/
 
         public static double[] CreateResiduals(double[] autoRegressionResult, List<ArimaData> df) {
-            return df.Zip(autoRegressionResult, (x, y) => (double)x.ClosingPrice - y).ToArray();
+            return df.Zip(autoRegressionResult, (x, y) => x.ClosingPrice - y).ToArray();
         }
 
-        public static double[] CreateResiduals(double[] autoRegressionResult, List<float> df)
+        public static double[] CreateResiduals(double[] autoRegressionResult, List<double> df)
         {
-            return df.Zip(autoRegressionResult, (x, y) => (double)x - y).ToArray();
+            return df.Zip(autoRegressionResult, (x, y) => x - y).ToArray();
         }
 
         public static ArimaMovingAverageResult MovingAverage(int q, double[] residuals, ArimaTrainTestSplittedData data) {
        
-            double[][] xTrainAsArray = data.xTrain.Select(column => column.Select(el => (double)el).ToArray()).ToArray();
+            double[][] xTrainAsArray = data.xTrain.Select(column => column.ToArray()).ToArray();
 
             double[][] xTrainArr = Transpose(data.xTrain);
 
-            double[] yTrainAsAray = data.yTrain.Select(el => (double)el).ToArray();
+            double[] yTrainAsAray = data.yTrain.ToArray();
 
             double[] r = Fit.MultiDim(xTrainArr, yTrainAsAray);
 
@@ -350,11 +343,11 @@ namespace MachineLearning.Trainers
         } 
 
         public static ArimaAutoRegressionResult AutoRegression(int p, List<ArimaData> df, ArimaTrainTestSplittedData data) {
-            double[][] xTrainAsArray = data.xTrain.Select(column => column.Select(el => (double)el).ToArray()).ToArray();
+            double[][] xTrainAsArray = data.xTrain.Select(column => column.ToArray()).ToArray();
 
             double[][] xTrainArr = Transpose(data.xTrain);
 
-            double[] yTrainAsAray = data.yTrain.Select(el => (double)el).ToArray();
+            double[] yTrainAsAray = data.yTrain.ToArray();
 
             var transposedXTrain = Transpose(data.xTrain);
 
@@ -387,8 +380,8 @@ namespace MachineLearning.Trainers
             return Input.Select(el => el + Coef).ToArray();
         }
 
-        public static List<List<float>> DropZeros(int p,List<List<float>> laggedVectors, bool skipAdditionalRows = true) {
-            List<List<float>> result = new List<List<float>>();
+        public static List<List<double>> DropZeros(int p,List<List<double>> laggedVectors, bool skipAdditionalRows = true) {
+            List<List<double>> result = new List<List<double>>();
             int numberOfColumns = laggedVectors.Count;
             int numberOfRows = laggedVectors[0].Count;
 
@@ -397,25 +390,15 @@ namespace MachineLearning.Trainers
 
         public static List<List<double>> DropZeros(int q, List<List<double>> laggedVectors)
         {
-            List<List<float>> result = new List<List<float>>();
+            List<List<double>> result = new List<List<double>>();
             int numberOfColumns = laggedVectors.Count;
             int numberOfRows = laggedVectors[0].Count;
            
             return laggedVectors.Select(column => column.Skip(q).ToList()).ToList();
         }
 
-        public static double[][] Transpose(IEnumerable<IEnumerable<float>> xData) {
+        public static double[][] Transpose(IEnumerable<IEnumerable<double>> xData) {
             double[][] result = 
-                xData.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-                .GroupBy(i => i.index, i => (double)i.item)
-                .Select(g => g.ToArray())
-                .ToArray();
-            return result;
-        }
-
-        public static double[][] Transpose(IEnumerable<IEnumerable<double>> xData)
-        {
-            double[][] result =
                 xData.SelectMany(inner => inner.Select((item, index) => new { item, index }))
                 .GroupBy(i => i.index, i => i.item)
                 .Select(g => g.ToArray())
@@ -423,32 +406,42 @@ namespace MachineLearning.Trainers
             return result;
         }
 
+        //public static double[][] Transpose(IEnumerable<IEnumerable<double>> xData)
+        //{
+        //    double[][] result =
+        //        xData.SelectMany(inner => inner.Select((item, index) => new { item, index }))
+        //        .GroupBy(i => i.index, i => i.item)
+        //        .Select(g => g.ToArray())
+        //        .ToArray();
+        //    return result;
+        //}
+
         public static double[][] Transpose(IEnumerable<double> xData) {
             return xData.Select(el=> new double[] { el }).ToArray();
         }
 
-        public static List<List<float>>[] SplitLaggedVectors(List<List<float>> laggedVectors,int splitIndex) {
-            List<List<float>> xTrain = new List<List<float>>();
-            List<List<float>> xTest = new List<List<float>>();
+        public static List<List<double>>[] SplitLaggedVectors(List<List<double>> laggedVectors,int splitIndex) {
+            List<List<double>> xTrain = new List<List<double>>();
+            List<List<double>> xTest = new List<List<double>>();
             
             foreach (var column in laggedVectors)
             {
-                List<List<float>> splittedColumn = SplitColumn(column, splitIndex);
+                List<List<double>> splittedColumn = SplitColumn(column, splitIndex);
                 xTrain.Add(splittedColumn[0]);
                 xTest.Add(splittedColumn[1]);
             }
-            return new List<List<float>>[2] { xTrain, xTest };
+            return new List<List<double>>[2] { xTrain, xTest };
         }
 
-        public static List<List<float>> SplitColumn(List<float> df, int splitIndex) {
+        public static List<List<double>> SplitColumn(List<double> df, int splitIndex) {
             return df.Select((x, i) => new { Index = i, Value = x })
                      .GroupBy(x => x.Index < splitIndex).Select(x => x.Select(v => v.Value).ToList()).ToList();
             
         }
 
-        public static ArimaTrainTestSplittedData PrepareTrainData(int p, IEnumerable<float> df, bool skipAdditionalRows = true) {
-            List<List<float>> laggedVectors = new List<List<float>>();
-            List<List<float>> dataForPrediction = new List<List<float>>();
+        public static ArimaTrainTestSplittedData PrepareTrainData(int p, IEnumerable<double> df, bool skipAdditionalRows = true) {
+            List<List<double>> laggedVectors = new List<List<double>>();
+            List<List<double>> dataForPrediction = new List<List<double>>();
             
             laggedVectors = CreateLaggedVectors(p, df);
            
@@ -460,7 +453,7 @@ namespace MachineLearning.Trainers
             for (int i = 0; i < p; i++)
             {
                 index = l - i;
-                List<float> record = new List<float>();
+                List<double> record = new List<double>();
                
                 for (int j = index-1; j >= index-p; j--)
                 {
@@ -469,14 +462,15 @@ namespace MachineLearning.Trainers
                 }
                 dataForPrediction.Add(record);
             }
+            //todo
             var yData = df.Select(row => row).Skip(skipAdditionalRows ? p + 13 : p).ToList(); ;
             return new ArimaTrainTestSplittedData(xData, dataForPrediction , yData, null);
         }
 
         public static ArimaTrainTestSplittedData PrepareTrainData(int p, List<ArimaData> df, bool skipAdditionalRows = true)
         {
-            List<List<float>> laggedVectors = new List<List<float>>();
-            List<List<float>> dataForPrediction = new List<List<float>>();
+            List<List<double>> laggedVectors = new List<List<double>>();
+            List<List<double>> dataForPrediction = new List<List<double>>();
             laggedVectors = CreateLaggedVectors(p, df);
             var xData = DropZeros(p, laggedVectors, skipAdditionalRows);
 
@@ -486,7 +480,7 @@ namespace MachineLearning.Trainers
             for (int i = 0; i < p; i++)
             {
                 index = l - i;
-                List<float> record = new List<float>();
+                List<double> record = new List<double>();
 
                 for (int j = index - 1; j >= index - p; j--)
                 {
@@ -499,11 +493,11 @@ namespace MachineLearning.Trainers
         }
 
         public static ArimaTrainTestSplittedData SplitToTrainTestData(int p, List<ArimaData> df, int splitIndex, bool skipAdditionalRows = true) {
-                List<List<float>> laggedVectors = new List<List<float>>();
-                List<List<float>> xTrain = new List<List<float>>();
-                List<List<float>> xTest = new List<List<float>>();
-                List<float> yTrain = new List<float>();
-                List<float> yTest = new List<float>();
+                List<List<double>> laggedVectors = new List<List<double>>();
+                List<List<double>> xTrain = new List<List<double>>();
+                List<List<double>> xTest = new List<List<double>>();
+                List<double> yTrain = new List<double>();
+                List<double> yTest = new List<double>();
 
                 laggedVectors = CreateLaggedVectors(p, df);
                 var xData = SplitLaggedVectors(laggedVectors, splitIndex);
@@ -520,13 +514,13 @@ namespace MachineLearning.Trainers
             
             }
 
-        public static ArimaTrainTestSplittedData SplitToTrainTestData(int p, IEnumerable<float> df, int splitIndex, bool skipAdditionalRows = true)
+        public static ArimaTrainTestSplittedData SplitToTrainTestData(int p, IEnumerable<double> df, int splitIndex, bool skipAdditionalRows = true)
         {
-            List<List<float>> laggedVectors = new List<List<float>>();
-            List<List<float>> xTrain = new List<List<float>>();
-            List<List<float>> xTest = new List<List<float>>();
-            List<float> yTrain = new List<float>();
-            List<float> yTest = new List<float>();
+            List<List<double>> laggedVectors = new List<List<double>>();
+            List<List<double>> xTrain = new List<List<double>>();
+            List<List<double>> xTest = new List<List<double>>();
+            List<double> yTrain = new List<double>();
+            List<double> yTest = new List<double>();
 
             laggedVectors = CreateLaggedVectors(p, df);
             var xData = SplitLaggedVectors(laggedVectors, splitIndex);
@@ -545,12 +539,12 @@ namespace MachineLearning.Trainers
 
 
         public static List<ArimaData> Shift(int periods ,List<ArimaData> df) {
-            float[] b = new float[periods];
+            double[] b = new double[periods];
             
-            List<float> closingPrices = df
+            List<double> closingPrices = df
                 .Select(row => row.ClosingPrice)
                 .Skip(periods).ToList();
-            closingPrices.InsertRange(0, new float[periods]);
+            closingPrices.InsertRange(0, new double[periods]);
             //df.ForEach(row => row.ClosingPrice = closingPri)
             return df.Zip(closingPrices, (oldPrice, price) => new ArimaData()
             {
@@ -559,26 +553,25 @@ namespace MachineLearning.Trainers
             }).ToList();
         }
 
-        public static List<float> ShiftFloat(int periods, List<ArimaData> df)
+        public static List<double> ShiftFloat(int periods, List<ArimaData> df)
         {
-            float[] b = new float[periods];
+            double[] b = new double[periods];
 
-            List<float> closingPrices = df
+            List<double> closingPrices = df
                 .Select(row => row.ClosingPrice).ToList();
                 //.Skip(periods).ToList();
-            closingPrices.InsertRange(0, new float[periods]);
+            closingPrices.InsertRange(0, new double[periods]);
             var res = closingPrices.SkipLast(periods);
             return res.ToList();
         }
-
-        public static List<float> ShiftFloat(int periods, IEnumerable<float> df)
+        //todo rename
+        public static List<double> ShiftFloat(int periods, IEnumerable<double> df)
         {
-            float[] b = new float[periods];
-
-            List<float> closingPrices = df
+            double[] b = new double[periods];
+            //todo
+            List<double> closingPrices = df
                 .Select(row => row).ToList();
-            //.Skip(periods).ToList();
-            closingPrices.InsertRange(0, new float[periods]);
+            closingPrices.InsertRange(0, new double[periods]);
             var res = closingPrices.SkipLast(periods);
             return res.ToList();
         }
@@ -589,19 +582,7 @@ namespace MachineLearning.Trainers
 
             List<double> closingPrices = df
                 .Select(row => row).ToList();
-            //.Skip(periods).ToList();
             closingPrices.InsertRange(0, new double[periods]);
-            var res = closingPrices.SkipLast(periods);
-            return res.ToList();
-        }
-
-        public static List<float> Shift(int periods, IEnumerable<float> df)
-        {
-            float[] b = new float[periods];
-            List<float> closingPrices = df
-                .Select(row => row).ToList();
-            //.Skip(periods).ToList();
-            closingPrices.InsertRange(0, new float[periods]);
             var res = closingPrices.SkipLast(periods);
             return res.ToList();
         }
