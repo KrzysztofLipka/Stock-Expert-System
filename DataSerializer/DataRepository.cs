@@ -94,7 +94,7 @@ namespace DataSerializer
 
         public int getCompanyId(string companyName)
         {
-            using (var connection = new SqlConnection(dbConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 var result = 
@@ -102,8 +102,6 @@ namespace DataSerializer
 
                 @"EXEC dbo.GetCompanyId
                 @CompanyName = @CompanyName", new {CompanyName = companyName });
-
-                var r = result;
 
                 return result;
 

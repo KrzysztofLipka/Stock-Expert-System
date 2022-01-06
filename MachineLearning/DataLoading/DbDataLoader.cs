@@ -18,14 +18,9 @@ namespace MachineLearning.DataLoading
             out DateTime lastUpdated, 
             int numberOfRowsToLoad = 0)
         {
-            //DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
             string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
             string sqlCommand2 = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '03-01-2021'";
             string sqlCommand3 = $"EXEC dbo.[GetLastClosingPrices] @CompanyName = '{companyName}', @NumberOfLastRows = {numberOfRowsToLoad}";
-
-            // DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
-            //IDataView dataFromDb = loader.Load(dbSource);
-            //IEnumerable<StockDataPointInput> data = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false);
             var data = FetchData(context, sqlCommand);
 
             if (numberOfRowsToLoad != 0) {
@@ -38,22 +33,74 @@ namespace MachineLearning.DataLoading
             return context.Data.LoadFromEnumerable<StockDataPointInput>(data);
         }
 
+        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+            string companyName,
+            out int numberOfRows,
+            int numberOfRowsToLoad = 0
+            )
+        {
+            string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
+            MLContext context = new MLContext();
+
+            IEnumerable<StockDataPointInput> result =  FetchData(context, sqlCommand);
+            numberOfRows = result.Count();
+            if (numberOfRowsToLoad != 0)
+            {
+                result = result.Skip(Math.Max(0, result.Count() - numberOfRowsToLoad));
+            }
+            return result;
+            
+        }
+
+        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+            string companyName,
+            out int numberOfRows,
+            DateTime maxDate,
+            int numberOfRowsToLoad = 0
+            )
+        {
+            string sqlCommand = $"EXEC dbo.GetClosingPricesWithMaxDate " +
+                $"@CompanyName = '{companyName}', " +
+                $"@MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+            MLContext context = new MLContext();
+
+            IEnumerable<StockDataPointInput> result = FetchData(context, sqlCommand);
+            numberOfRows = result.Count();
+            if (numberOfRowsToLoad != 0)
+            {
+                result = result.Skip(Math.Max(0, result.Count() - numberOfRowsToLoad));
+            }
+            return result;
+
+        }
+
+
+        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+            string companyName,
+            out int numberOfRows,
+            DateTime minDate,
+            DateTime maxDate
+            )
+        {
+            string sqlCommand = $"EXEC dbo.GetClosingPricesWithMinMaxDate " +
+                $"@CompanyName = '{companyName}', " +
+                $"@MinDate = '{minDate.ToString("dd-MM-yy")}' , " +
+                $"@MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+            MLContext context = new MLContext();
+
+            IEnumerable<StockDataPointInput> result = FetchData(context, sqlCommand);
+            numberOfRows = result.Count();
+            return result;
+
+        }
+
         public static IDataView LoadDataFromDb(
             MLContext context, string companyName, 
             out int numberOfRows,  
             DateTime maxDate, int numberOfRowsToLoad = 0)
         {
-            //DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
-            //todo validate tostring
             string sqlCommand = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
             
-            //DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
-
-            //IDataView dataFromDb = loader.Load(dbSource);
-
-            //numberOfRows = dataFromDb.Preview(20000).RowView.Length;
-            //var data1 = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
-
             var data = FetchData(context, sqlCommand);
 
             if (numberOfRowsToLoad != 0)
@@ -71,7 +118,6 @@ namespace MachineLearning.DataLoading
            out int numberOfRows, DateTime minDate,
            DateTime maxDate)
         {
-            //string sqlCommand4 = $"EXEC dbo.GetClosingPricesWithMinMaxDate @CompanyName = '{companyName}', @MaxDate = '03-05-2016', @MinDate = '03-05-2021'";
             string sqlCommand = $"EXEC dbo.GetClosingPricesWithMinMaxDate " +
                 $"@CompanyName = '{companyName}', " +
                 $"@MinDate = '{minDate.ToString("dd-MM-yy")}' , " +

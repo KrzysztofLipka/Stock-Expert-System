@@ -1,30 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using MathNet.Numerics;
 using MachineLearning.Util;
+using MachineLearning.DataModels;
+using MachineLearning.DataLoading;
 
 namespace MachineLearning.Trainers
 {
-    public class ArimaData {
-        public ArimaData(double closingPrice, string date)
-        {
-            this.ClosingPrice = closingPrice;
-            this.Date = date;
-        }
-
-        public ArimaData(string date, double closingPrice)
-        {
-            this.ClosingPrice = closingPrice;
-            this.Date = date;
-        }
-
-        public ArimaData(){ }
-        public double ClosingPrice;
-        public string Date;
-    }
-
     public class ArimaTrainTestSplittedData
     {
         public List<List<double>> xTrain;
@@ -121,8 +104,8 @@ namespace MachineLearning.Trainers
             var inputAsFloat = input.Select(row => Math.Log(row.ClosingPrice));
             var stageOne = MatrixHelpers.CalculateDiffrence(inputAsFloat.ToList(), 1);
             var res = MatrixHelpers.CalculateDiffrence(stageOne,12);
-            //todo remove hack
-            var res2 =  res.Select(row => new ArimaData(row, "Data")).ToList();
+            //todo remove hack and parse data
+            var res2 =  res.Select(row => new ArimaData(row, new DateTime())).ToList();
             res2[12].ClosingPrice = 0;
 
             return res2;
@@ -151,16 +134,41 @@ namespace MachineLearning.Trainers
                 predictedValues = sumOfPredictedValuesAndInputLog2
             };
         }
+
+        public static IEnumerable<double> Solve(int p, int q, string companyName, int horizon) {
+            int numberOfRows;
+            int numberOfRowsToLoad = horizon * 3;
+            IEnumerable<StockDataPointInput> data = DbDataLoader.LoadDataFromDb(companyName, out numberOfRows, numberOfRowsToLoad);
+
+            return Solve(p, q, data, horizon);
+        }
+
+        public static IEnumerable<double> Solve(int p, int q, string companyName,DateTime maxDate, int horizon)
+        {
+            int numberOfRows;
+            int numberOfRowsToLoad = horizon * 3;
+            IEnumerable<StockDataPointInput> data = DbDataLoader.LoadDataFromDb(
+                companyName, out numberOfRows,
+                maxDate, numberOfRowsToLoad);
+
+            return Solve(p, q, data, horizon);
+        }
+
+        public static IEnumerable<double> Solve(int p, int q, IEnumerable<StockDataPointInput>df ,int horizon = 1) {
+            var input = ConvertFromStockDataPointInput(df);
+            return Solve(p, q, input, horizon);
+        }
+
+        private static List<ArimaData> ConvertFromStockDataPointInput(IEnumerable<StockDataPointInput> df) {
+            return df.Select(el => new ArimaData(el.ClosingPrice, el.Date)).ToList();
+        }
         
 
-        public static void Solve(int p, int q, List<ArimaData> df) {
+        public static IEnumerable<double> Solve(int p, int q, List<ArimaData> df, int horizon = 1) {
 
             List<ArimaData> dfLog = PrepareInputData(df);
             int arSpitIndex = (int)(dfLog.Count * 0.8);
-         
-            var splitedDataSet = SplitToTrainTestData(p, dfLog, arSpitIndex);
-                
-
+            var splitedDataSet = SplitToTrainTestData(p, dfLog, arSpitIndex);      
             var autoRegressionResult = AutoRegression(p, dfLog, splitedDataSet);
 
             //todo
@@ -193,9 +201,9 @@ namespace MachineLearning.Trainers
                 dataForForecast.Add(originalDataForForecast[i] - originalDataForForecast[i + 1]);
             }
 
-            int numberOfForecasts = 16;
+            //int numberOfForecasts = 16;
 
-            for (int i = 0; i < numberOfForecasts; i++)
+            for (int i = 0; i < horizon; i++)
             {
                 double resu = originalDataForForecast[0];
                 double sum = dataForForecast.Zip(coef, (price, coefEl) => price * coefEl).Sum();
@@ -226,7 +234,7 @@ namespace MachineLearning.Trainers
                 dataForForecast2.Add(originalDataForForecast2[i] - originalDataForForecast2[i + 1]);
             }
 
-            for (int i = 0; i < numberOfForecasts; i++)
+            for (int i = 0; i < horizon; i++)
             {
                 double resu = 1;
                 double sum = dataForForecast2.Zip(coef2, (price, coefEl) => price * coefEl).Sum();
@@ -245,6 +253,8 @@ namespace MachineLearning.Trainers
             {
                 Console.WriteLine(item);
             }
+
+            return forecastplusErros;
         }
 
 
@@ -265,27 +275,6 @@ namespace MachineLearning.Trainers
 
             return result.ToArray();
         }
-
-        /*public static double[] SumArraysWithDiffrentSize(double[] firstArray, double[] secondArray)
-        {
-            List<double> result = new List<double>();
-            int coundDiference = firstArray.Length - secondArray.Length;
-            //result.InsertRange(0, new double[firstArray.Length - secondArray.Length]);
-            for (int i = 0; i < firstArray.Length; i++)
-            {
-                if (i < coundDiference)
-                {
-                    result.Add(0);
-                }
-                else
-                {
-                    result.Add(firstArray[i] + secondArray[i - coundDiference]);
-                }
-            }
-
-            return result.ToArray();
-
-        }*/
 
         public static double[] CreateResiduals(double[] autoRegressionResult, List<ArimaData> df) {
             return df.Zip(autoRegressionResult, (x, y) => x.ClosingPrice - y).ToArray();
@@ -403,16 +392,6 @@ namespace MachineLearning.Trainers
             return result;
         }
 
-        //public static double[][] Transpose(IEnumerable<IEnumerable<double>> xData)
-        //{
-        //    double[][] result =
-        //        xData.SelectMany(inner => inner.Select((item, index) => new { item, index }))
-        //        .GroupBy(i => i.index, i => i.item)
-        //        .Select(g => g.ToArray())
-        //        .ToArray();
-        //    return result;
-        //}
-
         public static double[][] Transpose(IEnumerable<double> xData) {
             return xData.Select(el=> new double[] { el }).ToArray();
         }
@@ -507,8 +486,7 @@ namespace MachineLearning.Trainers
                 yTrain = yData[0].Skip(skipAdditionalRows? p + 13 :p).ToList();
                 yTest = yData[1];
             
-                return new ArimaTrainTestSplittedData(xTrain, xTest, yTrain, yTest);
-            
+                return new ArimaTrainTestSplittedData(xTrain, xTest, yTrain, yTest);      
             }
 
         public static ArimaTrainTestSplittedData SplitToTrainTestData(int p, IEnumerable<double> df, int splitIndex, bool skipAdditionalRows = true)
@@ -532,8 +510,6 @@ namespace MachineLearning.Trainers
             return new ArimaTrainTestSplittedData(xTrain, xTest, yTrain, yTest);
 
         }
-
-
 
         public static List<ArimaData> Shift(int periods ,List<ArimaData> df) {
             double[] b = new double[periods];

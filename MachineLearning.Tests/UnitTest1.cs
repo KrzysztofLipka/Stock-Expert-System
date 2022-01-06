@@ -4,6 +4,7 @@ using MachineLearning.Util;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using MachineLearning.DataModels;
 
 namespace MachineLearning.Tests
 {
@@ -18,32 +19,32 @@ namespace MachineLearning.Tests
         public void Setup()
         {
             testData = new List<ArimaData>();
-            testData.Add(new ArimaData(1.234f,"Data"));
-            testData.Add(new ArimaData(1.236f, "Data"));
-            testData.Add(new ArimaData(1.244f, "Data"));
-            testData.Add(new ArimaData(1.222f, "Data"));
-            testData.Add(new ArimaData(1.88f, "Data"));
-            testData.Add(new ArimaData(1.244f, "Data"));
-            testData.Add(new ArimaData(1.24f, "Data"));
-            testData.Add(new ArimaData(1.28f, "Data"));
-            testData.Add(new ArimaData(1.004f, "Data"));
-            testData.Add(new ArimaData(1.24f, "Data"));
-            testData.Add(new ArimaData(1.00f, "Data"));
-            testData.Add(new ArimaData(1.23f, "Data"));
-            testData.Add(new ArimaData(1.20f, "Data"));
-            testData.Add(new ArimaData(1.24f, "Data"));
-            testData.Add(new ArimaData(1.234f, "Data"));
-            testData.Add(new ArimaData(1.284f, "Data"));
+            testData.Add(new ArimaData(1.234f,new DateTime()));
+            testData.Add(new ArimaData(1.236f, new DateTime()));
+            testData.Add(new ArimaData(1.244f, new DateTime()));
+            testData.Add(new ArimaData(1.222f, new DateTime()));
+            testData.Add(new ArimaData(1.88f, new DateTime()));
+            testData.Add(new ArimaData(1.244f, new DateTime()));
+            testData.Add(new ArimaData(1.24f, new DateTime()));
+            testData.Add(new ArimaData(1.28f, new DateTime()));
+            testData.Add(new ArimaData(1.004f,new DateTime()));
+            testData.Add(new ArimaData(1.24f, new DateTime()));
+            testData.Add(new ArimaData(1.00f, new DateTime()));
+            testData.Add(new ArimaData(1.23f, new DateTime()));
+            testData.Add(new ArimaData(1.20f, new DateTime()));
+            testData.Add(new ArimaData(1.24f, new DateTime()));
+            testData.Add(new ArimaData(1.234f,new DateTime()));
+            testData.Add(new ArimaData(1.284f,new DateTime()));
 
 
             laggedVectorsTestData = new List<ArimaData>();
-            laggedVectorsTestData.Add(new ArimaData(1.111f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.222f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.333f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.444f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.555f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.666f, "Data"));
-            laggedVectorsTestData.Add(new ArimaData(1.777f, "Data"));
+            laggedVectorsTestData.Add(new ArimaData(1.111f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.222f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.333f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.444f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.555f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.666f, new DateTime()));
+            laggedVectorsTestData.Add(new ArimaData(1.777f, new DateTime()));
 
 
             splitTestData = new List<float>();
@@ -61,23 +62,23 @@ namespace MachineLearning.Tests
         public void Test1()
         {
             var expectedResult = new List<ArimaData> {
-            new ArimaData(0, "Data"),
-            new ArimaData(1.234f,"Data"),
-            new ArimaData(1.236f, "Data"),
-            new ArimaData(1.244f, "Data"),
-            new ArimaData(1.222f, "Data"),
-            new ArimaData(1.88f, "Data"),
-            new ArimaData(1.244f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.28f, "Data"),
-            new ArimaData(1.004f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.00f, "Data"),
-            new ArimaData(1.23f, "Data"),
-            new ArimaData(1.20f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.234f, "Data"),
-            new ArimaData(1.284f, "Data")
+            new ArimaData(0, new DateTime()),
+            new ArimaData(1.234f, new DateTime()),
+            new ArimaData(1.236f, new DateTime()),
+            new ArimaData(1.244f, new DateTime()),
+            new ArimaData(1.222f, new DateTime()),
+            new ArimaData(1.88f,  new DateTime()),
+            new ArimaData(1.244f, new DateTime()),
+            new ArimaData(1.24f,  new DateTime()),
+            new ArimaData(1.28f,  new DateTime()),
+            new ArimaData(1.004f, new DateTime()),
+            new ArimaData(1.24f,  new DateTime()),
+            new ArimaData(1.00f,  new DateTime()),
+            new ArimaData(1.23f,  new DateTime()),
+            new ArimaData(1.20f,  new DateTime()),
+            new ArimaData(1.24f,  new DateTime()),
+            new ArimaData(1.234f, new DateTime()),
+            new ArimaData(1.284f, new DateTime())
 
         };
 
@@ -102,22 +103,22 @@ namespace MachineLearning.Tests
         public void Test2()
         {
             var expectedResult = new List<ArimaData> {
-            new ArimaData(0, "Data"),
-            new ArimaData(1.234f,"Data"),
-            new ArimaData(1.236f, "Data"),
-            new ArimaData(1.244f, "Data"),
-            new ArimaData(1.222f, "Data"),
-            new ArimaData(1.88f, "Data"),
-            new ArimaData(1.244f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.28f, "Data"),
-            new ArimaData(1.004f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.00f, "Data"),
-            new ArimaData(1.23f, "Data"),
-            new ArimaData(1.20f, "Data"),
-            new ArimaData(1.24f, "Data"),
-            new ArimaData(1.234f, "Data"),
+            new ArimaData(0,     new DateTime()),
+            new ArimaData(1.234f,new DateTime()),
+            new ArimaData(1.236f,new DateTime()),
+            new ArimaData(1.244f,new DateTime()),
+            new ArimaData(1.222f,new DateTime()),
+            new ArimaData(1.88f, new DateTime()),
+            new ArimaData(1.244f,new DateTime()),
+            new ArimaData(1.24f, new DateTime()),
+            new ArimaData(1.28f, new DateTime()),
+            new ArimaData(1.004f,new DateTime()),
+            new ArimaData(1.24f, new DateTime()),
+            new ArimaData(1.00f, new DateTime()),
+            new ArimaData(1.23f, new DateTime()),
+            new ArimaData(1.20f, new DateTime()),
+            new ArimaData(1.24f, new DateTime()),
+            new ArimaData(1.234f,new DateTime()),
             //new ArimaData(1.284f, "Data")
 
         };
@@ -266,7 +267,7 @@ namespace MachineLearning.Tests
         public void  TestAutoRegression()
         {
             //var result = Arima.SplitToTrainTestData(2, laggedVectorsTestData, 5);
-            var splitedDataSet = Arima.SplitToTrainTestData(2, laggedVectorsTestData, 6);
+            var splitedDataSet = Arima.SplitToTrainTestData(4, laggedVectorsTestData, 4);
 
             var res = Arima.AutoRegression(2, laggedVectorsTestData,splitedDataSet);
 

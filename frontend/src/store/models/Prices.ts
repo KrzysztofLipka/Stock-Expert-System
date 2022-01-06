@@ -87,12 +87,6 @@ export const predictions = createModel<IRootModel>()({
             } finally {
                 dispatch.predictions.setIsLoading(false);
             }
-
-
-
-
-
-
         },
 
         async loadHistoricalPredictions() {

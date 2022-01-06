@@ -1,11 +1,5 @@
 ﻿using System;
-using Microsoft.ML;
-using MachineLearning.DataModels;
-using Microsoft.ML.Transforms.TimeSeries;
 using MachineLearning.Trainers;
-using System.Collections.Generic;
-using Externals;
-using ScottPlot;
 
 namespace MachineLearning
 {

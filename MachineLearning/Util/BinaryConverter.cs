@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace MachineLearning.Util
 {
+    //todo rename
     public class BinaryConverter
     {
         static int daysAhead = 100;
@@ -106,6 +107,7 @@ namespace MachineLearning.Util
             List<bool> isRising = new List<bool>();
             for (int i = numberOfDays; i < priceArray.Count() - daysAhead; i++)
             {
+                //todo check
                 var t = priceArray[i + daysAhead];
                 var t2 = priceArray[i];
                 isRising.Add(priceArray[i+ daysAhead] > priceArray[i]);

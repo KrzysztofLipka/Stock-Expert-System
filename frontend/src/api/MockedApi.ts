@@ -243,7 +243,7 @@ export async function getPredictionModels(): Promise<string[]> {
     await delay(3000);
 
     return [
-        'Forecasting', 'Mocked Model'
+        'Forecasting', 'Mocked Model', 'ARIMA', 'SSA'
     ]
 
 }

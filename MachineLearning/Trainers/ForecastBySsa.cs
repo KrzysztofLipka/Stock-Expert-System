@@ -4,16 +4,11 @@ using Microsoft.ML.Data;
 using MachineLearning.DataModels;
 using Microsoft.ML.Transforms.TimeSeries;
 using System.IO;
-using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using ScottPlot;
 using MachineLearning.DataLoading;
-using Microsoft.ML.TimeSeries;
-using MathNet.Numerics;
-using System.Drawing;
 
 namespace MachineLearning.Trainers
 {
@@ -85,7 +80,6 @@ namespace MachineLearning.Trainers
                 forecastingEngine.CheckPoint(context, modelOuptutPath + $"{lastUpdate.ToShortDateString()}.zip");
             }
             
-            Console.ReadLine();
 
             return new SsaForecastOutput()
             {

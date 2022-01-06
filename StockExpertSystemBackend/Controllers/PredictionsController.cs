@@ -10,6 +10,7 @@ using StockExpertSystemBackend.Utils;
 //using Microsoft.Extensions.ML;
 using Microsoft.ML.Transforms.TimeSeries;
 using MachineLearning.DataModels;
+using MachineLearning.Trainers;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System.IO;
@@ -28,9 +29,61 @@ namespace StockExpertSystemBackend.Controllers
         {
             if (request.PredictionModel == "Forecasting")
             {
-                return GetForecastPrediction(request.Ticker,30);
+                return GetForecastPrediction(request.Ticker, 30);
             }
-            else if (request.PredictionModel == "LbfgsPoissonRegression") {
+
+            else if (request.PredictionModel == "SSA")
+            {
+                try
+                {
+                    ForecastBySsa ssa = new ForecastBySsa();
+                    SsaForecastOutput res = ssa.Predict(request.Ticker, request.Horizon);
+                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, request.Horizon);
+                    List<PredictionPoint> predictions = res.Result.Zip(dates, (result, date) => new PredictionPoint()
+                    {
+                        PredictedPrice = (decimal)result,
+                        Date = date
+                    }).ToList();
+                    return new PredictionResponse()
+                    {
+                        Predictions = predictions,
+                        Id = new DateTime().Ticks.ToString(),
+                        Ticker = request.Ticker
+                    };
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+
+            }
+
+            else if (request.PredictionModel == "ARIMA")
+            {
+                try {
+                    IEnumerable<double> res  = Arima.Solve(12,5, request.Ticker, request.Horizon);
+                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, request.Horizon);
+                    List<PredictionPoint> predictions = res.Zip(dates, (result, date) => new PredictionPoint()
+                    {
+                        PredictedPrice = (decimal)result,
+                        Date = date
+                    }).ToList();
+
+                    return new PredictionResponse()
+                    {
+                        Predictions = predictions,
+                        Id = new DateTime().Ticks.ToString(),
+                        Ticker = request.Ticker
+                    };
+
+
+                } catch (Exception e) {
+                    throw;
+                }
+            }
+
+            else if (request.PredictionModel == "LbfgsPoissonRegression")
+            {
                 return getLbfsgRegression();
             }
             else
@@ -60,8 +113,6 @@ namespace StockExpertSystemBackend.Controllers
                 }
 
                 return res;
-
-
             }
         }
 
@@ -104,9 +155,6 @@ namespace StockExpertSystemBackend.Controllers
                     }*/
 
                 }
-
-
-
             };
 
             DateTime timeSeriesStartDate = new DateTime(2020, 11, 12);
@@ -154,13 +202,6 @@ namespace StockExpertSystemBackend.Controllers
 
 
         }
-
-
-
-
-
-
-        
 
         [HttpGet("historicalDetails/{predictionId}")]
         public ActionResult<HistoricalPredictionDetailsResponse> GetHistoricalPredictionDetails(string predictionId)
