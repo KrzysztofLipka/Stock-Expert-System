@@ -23,11 +23,7 @@ namespace MachineLearning
 
             binary.Predict("1", "2", "nke", "^dji", 2000);
 
-            binary.Predict("1", "2", "AAPL", "^ndq", 2000);
-
-            double mae;
-            double rmse;
-            double acf;
+            //binary.Predict("1", "2", "AAPL", "^ndq", 2000);
             //Console.WriteLine(i);
             ForecastBySsaParams parameters = new ForecastBySsaParams()
                 {
@@ -35,13 +31,10 @@ namespace MachineLearning
                 };
 
                
-             forecast.Predict("../../../../MLModels/.csv",
+             var res = forecast.Predict("../../../../MLModels/.csv",
                                 $"../../../../MLModels/SSA_{companyName}_{horizon}_", companyName,
                                 parameters,
-                                450,
-                                out mae,
-                                out rmse,
-                                out acf
+                                450
                                 );
            
             Console.WriteLine("---------------");
@@ -49,7 +42,7 @@ namespace MachineLearning
 
         }
 
-        private void PredictForMultuipleTrainSizes() {
+        /*private void PredictForMultuipleTrainSizes() {
             ForecastBySsa forecast = new ForecastBySsa();
 
 
@@ -134,6 +127,6 @@ namespace MachineLearning
 
             Console.ReadKey();
 
-        }
+        }*/
     }
 }

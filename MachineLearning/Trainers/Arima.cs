@@ -20,10 +20,7 @@ namespace MachineLearning.Trainers
             this.Date = date;
         }
 
-        public ArimaData()
-        {
- 
-        }
+        public ArimaData(){ }
         public double ClosingPrice;
         public string Date;
     }

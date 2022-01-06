@@ -10,23 +10,30 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using ScottPlot;
+using MachineLearning.DataLoading;
 using Microsoft.ML.TimeSeries;
 using MathNet.Numerics;
 using System.Drawing;
 
 namespace MachineLearning.Trainers
 {
-
     public class ForecastBySsa
     {
-        string connectionString = "";
-        public void Predict(string dataPath, string modelOuptutPath, string companyName, ForecastBySsaParams parameters, int numberOfRowsToLoad, out double mae, out double rmse, out double acf) {
+
+        public SsaForecastOutput Predict(string companyName, int horizon)
+        {
+            ForecastBySsaParams parameters  = new ForecastBySsaParams() { Horizon = horizon };
+            return Predict("", "", companyName, parameters, 500, false);
+        }
+
+        public SsaForecastOutput Predict(string dataPath, string modelOuptutPath, string companyName, ForecastBySsaParams parameters, int numberOfRowsToLoad, bool saveModel = true) {
 
             int horizon = parameters.Horizon;
             var context = new MLContext();
             int numberOfRows;
             DateTime lastUpdate;
-            IDataView dataFromDb = LoadDataFromDb(context, companyName,out numberOfRows, numberOfRowsToLoad, out lastUpdate);
+            //IDataView dataFromDb = LoadDataFromDb(context, companyName,out numberOfRows, numberOfRowsToLoad, out lastUpdate);
+            IDataView dataFromDb = DbDataLoader.LoadDataFromDb(context, companyName,out numberOfRows, out lastUpdate, numberOfRowsToLoad);
             List<StockDataPointInput> dataFromDbToArray = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
 
             var splitIndex = numberOfRows - horizon;
@@ -34,37 +41,24 @@ namespace MachineLearning.Trainers
             List<StockDataPointInput> trainList;
             List<StockDataPointInput> testList;
 
+            //todo use generic method
             SplitList(dataFromDbToArray, out trainList, out testList, splitIndex);
 
             var trainSet = context.Data.LoadFromEnumerable<StockDataPointInput>(trainList); 
 
             var testSet = context.Data.LoadFromEnumerable<StockDataPointInput>(testList);
 
-            //var seriesLength = horizon * 2;
-
-            //var windowSize = seriesLength / 3;
-
-            //var t = parameters.TrainSize / 2;
             var seriesLength = trainList.Count;
             var windowSize = seriesLength/3;
             var trainSize = trainList.Count;
-            var hor = 30;
-
-
-
+         
             var pipeline = context.Forecasting.ForecastBySsa(
                 "Forecast",
                "ClosingPrice",
                windowSize: windowSize,
                seriesLength: seriesLength,
                trainSize: trainSize,
-               horizon: 30
-               
-               //maxRank: 1
-               //shouldStabilize: false
-
-
-               );
+               horizon: parameters.Horizon);
 
            
             //var model = pipeline.Fit(dataFromDb);
@@ -77,25 +71,29 @@ namespace MachineLearning.Trainers
             double Mae;
             double Rmse;
             double Acf;
-            this.Evaluate(testSet, model, context, plotLabel, out Mae, out Rmse, out Acf);
 
-            mae = Mae;
-            rmse = Rmse;
-            acf = Acf;
-
+            Evaluate(testSet, model, context, plotLabel, out Mae, out Rmse, out Acf);
 
             var forecastingEngine = model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);
 
+            //tod verify if required
             foreach (var forecast in testList)
             {
                 forecastingEngine.Predict(forecast);
             }
-
-            forecastingEngine.CheckPoint(context, modelOuptutPath + $"{lastUpdate.ToShortDateString()}.zip");
-
-
-
+            if (saveModel) {
+                forecastingEngine.CheckPoint(context, modelOuptutPath + $"{lastUpdate.ToShortDateString()}.zip");
+            }
+            
             Console.ReadLine();
+
+            return new SsaForecastOutput()
+            {
+                Result = testList.Select(el => (double)el.ClosingPrice).ToArray(),
+                Mae = Mae,
+                Acf = Acf,
+                Rmse = Rmse
+            };
         }
 
         public void UpdateModel(NbpData[] updateData, string modelOuptutPath) {
@@ -147,7 +145,7 @@ namespace MachineLearning.Trainers
 
         }
 
-        private IDataView LoadDataFromDb(MLContext context, string companyName, out int numberOfRows, int numberOfRowsToLoad,out DateTime lastUpdated, DateTime? requestedUpdateDate = null) {
+        /*private IDataView LoadDataFromDb(MLContext context, string companyName, out int numberOfRows, int numberOfRowsToLoad,out DateTime lastUpdated, DateTime? requestedUpdateDate = null) {
             DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
             //string sqlCommand = "select ClosingPrice from dbo.HistoricalPrices where CompanyId = 1 order by PriceId";
             string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
@@ -170,8 +168,9 @@ namespace MachineLearning.Trainers
             var data3 = context.Data.LoadFromEnumerable<StockDataPointInput>(data2);
 
             return data3;
-        }
+        }*/
 
+        //todo
         private void SplitList(
             List<StockDataPointInput> inputList,
             out List<StockDataPointInput> listOne,

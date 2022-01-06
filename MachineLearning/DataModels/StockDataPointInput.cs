@@ -7,8 +7,6 @@ namespace MachineLearning.DataModels
 {
     public class StockDataPointInput
     {
-        
-
         [LoadColumn(0)]
         [ColumnName("ClosingPrice")]
         public float ClosingPrice { get; set; }

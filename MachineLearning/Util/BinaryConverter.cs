@@ -50,28 +50,6 @@ namespace MachineLearning.Util
 
             return result;
 
-            
-            
-
-            /*foreach (var point in input)
-            {
-                if (previous is null) {
-                    previous = point;
-                    continue;
-                };
-
-                var d = point.Date;
-
-                result.Add(
-                    new StockDataPointBinaryInput() {
-                        Date = point.Date,
-                        //Date = new float[1] { (float)point.Date.Ticks },
-                        IsRising = point.ClosingPrice > previous.ClosingPrice
-                    }
-                    );
-                previous = point;
-            }
-             return result;  */        
         }
 
         private static List<float> CalculateMomentum(int numberOfDays, List<float> priceArray)
@@ -96,7 +74,7 @@ namespace MachineLearning.Util
             return momentumList;
 
         }
-
+        //zmiennosc
         private static List<float> CalculateVoliatility(int numberOfDays, List<float> priceArray) {
             //int daysAhead = 270;
             List<float> voliatilityList = new List<float>();

@@ -1,113 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-
-using System;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using MachineLearning.DataModels;
-using Microsoft.ML.Transforms.TimeSeries;
-using System.IO;
-using System.Threading;
 using System.Linq;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using ScottPlot;
-using Microsoft.ML.TimeSeries;
-using MathNet.Numerics;
-using System.Drawing;
 using MachineLearning.Util;
 using Microsoft.ML.Trainers;
+using MachineLearning.DataLoading;
 
 namespace MachineLearning.Trainers
 {
     internal class Prediction
     {
-        // Original label.
         public bool Label { get; set; }
-        // Predicted label from the trainer.
         public bool PredictedLabel { get; set; }
     }
 
     public class BinaryClassifier
     {
-        string connectionString = "";
-
-
-
-        private IDataView LoadDataFromDb(MLContext context, string companyName, string indexName, out int numberOfRows, int numberOfRowsToLoad, /*out DateTime lastUpdated,*/ DateTime? requestedUpdateDate = null)
+        private IDataView PrepateInputData(MLContext context, string companyName, string indexName, out int numberOfRows, int numberOfRowsToLoad, /*out DateTime lastUpdated,*/ DateTime? requestedUpdateDate = null)
         {
-            DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
-            //string sqlCommand = "select ClosingPrice from dbo.HistoricalPrices where CompanyId = 1 order by PriceId";
-            string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
-            string sqlCommand2 = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '03-01-2021'";
-            string sqlCommand3 = $"EXEC dbo.[GetLastClosingPrices] @CompanyName = '{companyName}', @NumberOfLastRows = {numberOfRowsToLoad}";
-            string sqlCommand4 = $"EXEC dbo.GetClosingPricesWithMinMaxDate @CompanyName = '{companyName}', @MaxDate = '03-05-2016', @MinDate = '03-05-2021'";
+            int numberCompanyDataRows;
+            int numberIndexDataRows;
 
+            DateTime minDate = new DateTime(2016, 5, 3);
+            DateTime maxDate = new DateTime(2021, 5, 3);
 
-            //EXEC dbo.GetClosingPricesWithMinMaxDate @CompanyName = 'AAPL', @MinDate = '03-05-2021', @MaxDate = '03-05-2020'
+            IDataView companyData = DbDataLoader.LoadDataFromDb(context, companyName, out numberCompanyDataRows, minDate, maxDate);
+            IDataView indexData = DbDataLoader.LoadDataFromDb(context, indexName, out numberIndexDataRows, minDate, maxDate);
 
-            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand4);
+            var companyDataAsList = context.Data.CreateEnumerable<StockDataPointInput>(companyData, reuseRowObject: false);
+            companyDataAsList = companyDataAsList.Skip(Math.Max(0, companyDataAsList.Count() - numberOfRowsToLoad));
 
-            IDataView dataFromDb = loader.Load(dbSource);
+            var indexDataAsList = context.Data.CreateEnumerable<StockDataPointInput>(indexData, reuseRowObject: false);
+            indexDataAsList = indexDataAsList.Skip(Math.Max(0, indexDataAsList.Count() - numberOfRowsToLoad));
 
-            //numberOfRows = dataFromDb.Preview(20000).RowView.Length;
-            var data1 = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
-
-            var data2 = data1.Skip(Math.Max(0, data1.Count() - numberOfRowsToLoad));
-
-            //---index data-------------------
-
-          
-            DatabaseSource dbSource2 = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand4);
-
-            IDataView dataFromDb2 = loader.Load(dbSource);
-
-                //numberOfRows = dataFromDb.Preview(20000).RowView.Length;
-            var data12 = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
-
-            var data22 = data1.Skip(Math.Max(0, data1.Count() - numberOfRowsToLoad));
-
-
-            
-
-            //-------------------------------
-
-            var data3 = BinaryConverter.Convert(data2, data22);
-
-
-            //lastUpdated = data3.Last().Date;
-
-            numberOfRows = data2.Count();
-
-
-
-            var data4 = context.Data.LoadFromEnumerable<StockDataPointBinaryInput>(data3);
-
+            var connectedData = BinaryConverter.Convert(companyDataAsList, indexDataAsList);
+            numberOfRows = companyDataAsList.Count();
+            IDataView connectedDataview = context.Data.LoadFromEnumerable<StockDataPointBinaryInput>(connectedData);
             var normalize = context.Transforms.NormalizeMeanVariance("Features",
                 fixZero: false);
 
-            var normalizeTransform = normalize.Fit(data4);
-
-            var transformedData = normalizeTransform.Transform(data4);
-
-
-            //var data5 = 
+            var normalizeTransform = normalize.Fit(connectedDataview);
+            var transformedData = normalizeTransform.Transform(connectedDataview);
 
             return transformedData;
         }
 
-        public void Predict(string dataPath, string modelOuptutPath, string companyName, int numberOfRowsToLoad) {
+        public void Predict(string dataPath, string modelOuptutPath, string companyName,string indexName, int numberOfRowsToLoad) {
             var mlContext = new MLContext();
 
-            
             var context = new MLContext();
             int numberOfRows;
             DateTime lastUpdate;
-            IDataView dataFromDb = LoadDataFromDb(context, companyName,"^dji", out numberOfRows, numberOfRowsToLoad);
+            IDataView dataFromDb = PrepateInputData(context, companyName, indexName, out numberOfRows, numberOfRowsToLoad);
 
-            //var pip = mlContext.Transforms.NormalizeMinMax("Features", "Features");
 
             List<StockDataPointBinaryInput> dataFromDbToArray = context.Data.CreateEnumerable<StockDataPointBinaryInput>(dataFromDb, reuseRowObject: false).ToList();
 
@@ -154,6 +101,7 @@ namespace MachineLearning.Trainers
 
         }
 
+        //todo use generic
         private void SplitList(
            List<StockDataPointBinaryInput> inputList,
            out List<StockDataPointBinaryInput> listOne,
@@ -195,28 +143,6 @@ namespace MachineLearning.Trainers
 
             Console.WriteLine($"Positive Recall: {metrics.PositiveRecall:F2}\n");
             Console.WriteLine(metrics.ConfusionMatrix.GetFormattedConfusionTable());
-        }
-
-        private List<float> CalculateMomentum(int numberOfDays, List<double> priceArray) {
-            int daysAhead = 270;
-            List<float> momentumList = new List<float>();
-            List<int> movingMomentumList = new List<int>();
-            for (int i = 1; i < numberOfDays+ 1; i++)
-            {
-                movingMomentumList.Add(priceArray[i]> priceArray[i -1] ? 1 : -1);
-            }
-
-            momentumList.Add(momentumList.Average());
-
-            for (int j = numberOfDays + 1; j < priceArray.Count- daysAhead; j++)
-            {
-                movingMomentumList.RemoveAt(0);
-                movingMomentumList.Add(priceArray[j] > priceArray[j - 1] ? 1 : -1);
-                momentumList.Add(momentumList.Average());
-            }
-
-            return momentumList;
-
         }
 
     }

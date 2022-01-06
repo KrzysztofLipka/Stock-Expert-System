@@ -29,7 +29,7 @@ namespace MachineLearning.Util
             return sb.ToString();
         }
 
-        public static string PrintRow(IEnumerable<float> row)
+        /*public static string PrintRow(IEnumerable<double> row)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var el in row)
@@ -37,9 +37,9 @@ namespace MachineLearning.Util
                 sb.Append($"{el}, ");
             }
             return sb.ToString();
-        }
+        }*/
 
-        public static List<float> CalculateOrderDiscreteDiffrence(IEnumerable<float> input) {
+        /*public static List<float> CalculateOrderDiscreteDiffrence(IEnumerable<float> input) {
             List<float> inputAsList = input.ToList();
             List<float> result = new List<float>();
             for (int i = 0; i < input.Count() -1; i++)
@@ -60,7 +60,7 @@ namespace MachineLearning.Util
             }
 
             return result;
-        }
+        }*/
 
         public static List<double> CalculateOrderDiscreteDiffrence(IEnumerable<double> input)
         {
@@ -129,7 +129,5 @@ namespace MachineLearning.Util
 
             return result;
         }
-
-
     }
 }

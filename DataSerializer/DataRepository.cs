@@ -12,7 +12,7 @@ namespace DataSerializer
 {
     class DataRepository : IDataRepository
     {
-        private string dbConnectionString = "";
+        private string connectionString = "";
 
         public IEnumerable<StockDataPoint> GetStockDataPoints(string StockName)
         {
@@ -51,7 +51,7 @@ namespace DataSerializer
             var l = dt;
 
 
-            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(dbConnectionString))
+            using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connectionString))
             {
                 bulkCopy.DestinationTableName =
                     "dbo.HistoricalPrices";
@@ -70,7 +70,7 @@ namespace DataSerializer
 
         public void PostStockDataPoint(StockDataPoint dataPoint)
         {
-            using (var connection = new SqlConnection(dbConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 connection.Execute(
