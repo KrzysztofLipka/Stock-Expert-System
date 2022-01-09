@@ -210,7 +210,7 @@ namespace MachineLearning.Trainers
                     }
 
 
-                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true,defaultWindowSize,splitIndex);
+                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true,defaultWindowSize, trainSize);
 
                     if (result.Mae < BestMAE && result.Rmse <BestRMSE/* &&  Math.Abs(result.Acf) < 0.05*/ ) {
                         BestMAE = result.Mae;
