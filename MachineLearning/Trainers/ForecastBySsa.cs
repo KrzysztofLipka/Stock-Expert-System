@@ -12,81 +12,236 @@ using MachineLearning.DataLoading;
 
 namespace MachineLearning.Trainers
 {
+    public class SSASolveResult {
+        public double Mae { get; set; }
+        public double Rmse { get; set; }
+        public double Acf { get; set; }
+        public SsaForecastingTransformer Model { get; set; }
+        public int WindowSize { get; set; }
+        public int BestWindowSize { get; set; }
+    }
+
     public class ForecastBySsa
     {
 
-        public SsaForecastOutput Predict(string companyName, int horizon)
+        public SsaForecastOutput Predict(string companyName, int horizon, DateTime maxDate = new DateTime(), bool interateWindow = false)
         {
             ForecastBySsaParams parameters  = new ForecastBySsaParams() { Horizon = horizon };
-            return Predict("", "", companyName, parameters, 500, false);
+            return Predict("", "", companyName, parameters, 0, false, maxDate, interateWindow);
         }
 
-        public SsaForecastOutput Predict(string dataPath, string modelOuptutPath, string companyName, ForecastBySsaParams parameters, int numberOfRowsToLoad, bool saveModel = true) {
+        public SsaForecastOutput Predict(string companyName, int horizon,int numberOfRowsToLoad, DateTime maxDate = new DateTime(), bool interateWindow = false)
+        {
+            ForecastBySsaParams parameters = new ForecastBySsaParams() { Horizon = horizon };
+            return Predict("", "", companyName, parameters, 0, false, maxDate);
+        }
 
-            int horizon = parameters.Horizon;
-            var context = new MLContext();
-            int numberOfRows;
-            DateTime lastUpdate;
-            //IDataView dataFromDb = LoadDataFromDb(context, companyName,out numberOfRows, numberOfRowsToLoad, out lastUpdate);
-            IDataView dataFromDb = DbDataLoader.LoadDataFromDb(context, companyName,out numberOfRows, out lastUpdate, numberOfRowsToLoad);
-            List<StockDataPointInput> dataFromDbToArray = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
-
-            var splitIndex = numberOfRows - horizon;
+        private void SplitData(
+            MLContext context, List<StockDataPointInput> data ,
+            out IDataView trainSet, out IDataView testSet,
+            out int trainListSize,int splitIndex) {
 
             List<StockDataPointInput> trainList;
             List<StockDataPointInput> testList;
 
             //todo use generic method
-            SplitList(dataFromDbToArray, out trainList, out testList, splitIndex);
+            SplitList(data, out trainList, out testList, splitIndex);
+            trainSet = context.Data.LoadFromEnumerable<StockDataPointInput>(trainList);
+            testSet = context.Data.LoadFromEnumerable<StockDataPointInput>(testList);
+            trainListSize = trainList.Count();
+        }
 
-            var trainSet = context.Data.LoadFromEnumerable<StockDataPointInput>(trainList); 
+        private SSASolveResult Solve(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows,int horizon, bool iterateWindow, int defaultWindowSize = 0) {
+            var splitIndex = (int)(numberOfRows * 0.8);
 
-            var testSet = context.Data.LoadFromEnumerable<StockDataPointInput>(testList);
+            IDataView trainSet; //= context.Data.LoadFromEnumerable<StockDataPointInput>(trainList); 
+            IDataView testSet; //= context.Data.LoadFromEnumerable<StockDataPointInput>(testList);
 
-            var seriesLength = trainList.Count;
-            var windowSize = seriesLength/3;
-            var trainSize = trainList.Count;
-         
-            var pipeline = context.Forecasting.ForecastBySsa(
-                "Forecast",
-               "ClosingPrice",
-               windowSize: windowSize,
-               seriesLength: seriesLength,
-               trainSize: trainSize,
-               horizon: parameters.Horizon);
+            int trainListSize;
 
+            SplitData(context, dataFromDbToArray, out trainSet, out testSet, out trainListSize, splitIndex);
+            int trainSize = trainListSize; //365
+            int seriesLength = trainSize/3; //30
            
-            //var model = pipeline.Fit(dataFromDb);
-            var model = pipeline.Fit(trainSet);
+            int windowSize = defaultWindowSize != 0 
+                ? defaultWindowSize 
+                : horizon+1;
+            windowSize = windowSize < 2 ? 2 : windowSize;
 
-            string plotLabel = $"windowsize: {windowSize}, " +
-                $"seriesLength: {seriesLength}, trainSize: {trainSize}, " +
-                $"horizon: {horizon}, całkowita ilośc danych: {numberOfRowsToLoad}";
+            if (seriesLength <= windowSize) {
+                windowSize = seriesLength - 3;
+            }
+            
 
             double Mae;
             double Rmse;
             double Acf;
 
+            double BestMAE;
+            double BestRMSE;
+            double BestACF;
+            int BestWindow = 0;
+
+            SsaForecastingEstimator pipeline = context.Forecasting.ForecastBySsa(
+                  "Forecast",
+                 "ClosingPrice",
+                 windowSize: windowSize, //windowSize,
+                 seriesLength: 2*(horizon + 1),//windowSize*2, //seriesLength,
+                 trainSize: trainSize,
+                 horizon: horizon);
+
+            SsaForecastingTransformer model = pipeline.Fit(trainSet);
+
+            string plotLabel = $"windowsize: {windowSize}, " +
+                    $"seriesLength: {seriesLength}, trainSize: {trainSize}, " +
+                    $"horizon: {horizon}, całkowita ilośc danych: {numberOfRows}";
+
             Evaluate(testSet, model, context, plotLabel, out Mae, out Rmse, out Acf);
 
-            var forecastingEngine = model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);
+            BestMAE = Mae;
+            BestRMSE = Rmse;
+            BestACF = Acf;
+
+            for (int i = windowSize-1; i > 2; i--)
+            {
+                
+
+                int hor = i < 2 ? 2 : i;
+
+                if (seriesLength < i)
+                {
+                    hor = seriesLength - 1;
+                }
+
+                pipeline = context.Forecasting.ForecastBySsa(
+                    "Forecast",
+                   "ClosingPrice",
+                   windowSize: hor,
+                   seriesLength: 2 * (hor + 1),//seriesLength,
+                   trainSize: trainSize,
+                   horizon: horizon);
+
+
+
+
+                //var model = pipeline.Fit(dataFromDb);
+                 model = pipeline.Fit(trainSet);
+
+                
+
+                string plotLabel2 = $"windowsize: {windowSize}, " +
+                    $"seriesLength: {seriesLength}, trainSize: {trainSize}, " +
+                    $"horizon: {horizon}, całkowita ilośc danych: {numberOfRows}";
+
+                Evaluate(testSet, model, context, plotLabel2, out Mae, out Rmse, out Acf);
+
+                if (Mae < BestMAE  /*&&  Math.Abs(Acf) < 0.05*/)
+                {
+                    BestMAE = Mae;
+                    BestRMSE = Rmse;
+                    BestACF = Acf;
+                    BestWindow = hor;
+                    //bestTrainListSize = dataToSkip;
+                };
+
+
+                if (!iterateWindow) {
+                    break;
+                }
+            }
+
+            return new SSASolveResult()
+            {
+                Acf = BestACF,
+                Rmse = BestRMSE,
+                Mae = BestMAE,
+                WindowSize = windowSize,
+                BestWindowSize = BestWindow,
+                Model = model
+            };
+
+        }
+
+        public SsaForecastOutput Predict(
+            string dataPath, 
+            string modelOuptutPath, 
+            string companyName, 
+            ForecastBySsaParams parameters, 
+            int numberOfRowsToLoad, 
+            bool saveModel = true, 
+            DateTime maxDate = new DateTime(), 
+            bool interateWindow = false) {
+
+            int horizon = parameters.Horizon;
+            var context = new MLContext();
+            int numberOfRows;
+            DateTime lastUpdate;
+
+            if (numberOfRowsToLoad == 0) {
+                numberOfRowsToLoad = horizon * 15;
+            }
+            
+            IDataView dataFromDb = maxDate < DateTime.Today
+                ?DbDataLoader.LoadDataFromDb(context, companyName, out numberOfRows,out lastUpdate, maxDate, numberOfRowsToLoad) 
+                :DbDataLoader.LoadDataFromDb(context, companyName,out numberOfRows, out lastUpdate, numberOfRowsToLoad);
+            List<StockDataPointInput> dataFromDbToArray = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
+            
+
+            SSASolveResult nonIterativeModel = Solve(context, dataFromDbToArray,numberOfRows, horizon, false);
+            double BestMAE = nonIterativeModel.Mae;
+            double BestRMSE = nonIterativeModel.Rmse;
+            double BestACF = nonIterativeModel.Acf;
+            int BestWindow = nonIterativeModel.WindowSize;
+            int bestDataToSkipValue = 0;
+            SSASolveResult finalModel;
+            if (interateWindow) {
+                
+                
+                for (int dataToSkip = 0; dataToSkip < numberOfRowsToLoad-(horizon*3); dataToSkip += horizon)
+                {
+                    List<StockDataPointInput> skippedDataForDbArray = dataFromDbToArray.Skip(dataToSkip).ToList();
+
+                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true);
+
+                    if (result.Mae < BestMAE /* &&  Math.Abs(result.Acf) < 0.05*/ ) {
+                        BestMAE = result.Mae;
+                        BestRMSE = result.Rmse;
+                        BestACF = result.Acf;
+                        BestWindow = result.BestWindowSize;
+                        bestDataToSkipValue = dataToSkip;
+                    };
+
+                    
+                }
+
+                List<StockDataPointInput> bestSkippedDataForDbArray = dataFromDbToArray.Skip(bestDataToSkipValue).ToList();
+                finalModel = Solve(context, bestSkippedDataForDbArray, bestSkippedDataForDbArray.Count(), horizon, false, BestWindow);
+                nonIterativeModel = finalModel;
+
+            }
+
+
+            var forecastingEngine = nonIterativeModel.Model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);
 
             //tod verify if required
-            foreach (var forecast in testList)
-            {
-                forecastingEngine.Predict(forecast);
-            }
+            //foreach (var forecast in testList)
+            //{
+            //    forecastingEngine.Predict(forecast);
+            //}
             if (saveModel) {
                 forecastingEngine.CheckPoint(context, modelOuptutPath + $"{lastUpdate.ToShortDateString()}.zip");
             }
-            
+
+            var res2 = forecastingEngine.Predict();
+
 
             return new SsaForecastOutput()
             {
-                Result = testList.Select(el => (double)el.ClosingPrice).ToArray(),
-                Mae = Mae,
-                Acf = Acf,
-                Rmse = Rmse
+                //Result = testList.Select(el => (double)el.ClosingPrice).ToArray(),
+                Result = res2.Forecast.Select(el => (double)el).ToArray(),
+                Mae = nonIterativeModel.Mae,
+                Acf = nonIterativeModel.Acf,
+                Rmse = nonIterativeModel.Rmse
             };
         }
 
@@ -129,7 +284,7 @@ namespace MachineLearning.Trainers
            RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2))); // Root Mean Squared Error
            ACF = MathNet.Numerics.Statistics.Mcmc.MCMCDiagnostics.ACF(forecast, 2, x => x * x);
 
-           PlotData(actual.Count(), actual, forecast, label,MAE, RMSE,ACF);
+           //PlotData(actual.Count(), actual, forecast, label,MAE, RMSE,ACF);
 
            Console.WriteLine("Evaluation Metrics");
            Console.WriteLine("---------------------");
@@ -138,31 +293,6 @@ namespace MachineLearning.Trainers
            Console.WriteLine($"Auto Correlation Function: {ACF:F3}\n");
 
         }
-
-        /*private IDataView LoadDataFromDb(MLContext context, string companyName, out int numberOfRows, int numberOfRowsToLoad,out DateTime lastUpdated, DateTime? requestedUpdateDate = null) {
-            DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
-            //string sqlCommand = "select ClosingPrice from dbo.HistoricalPrices where CompanyId = 1 order by PriceId";
-            string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
-            string sqlCommand2 = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '03-01-2021'";
-            string sqlCommand3 = $"EXEC dbo.[GetLastClosingPrices] @CompanyName = '{companyName}', @NumberOfLastRows = {numberOfRowsToLoad}";
-
-            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
-
-            IDataView dataFromDb = loader.Load(dbSource);
-
-            //numberOfRows = dataFromDb.Preview(20000).RowView.Length;
-            var data1 = context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false).ToList();
-
-            var data2 =  data1.Skip(Math.Max(0, data1.Count() - numberOfRowsToLoad));
-
-            lastUpdated = data2.Last().Date;
-
-            numberOfRows = data2.Count();
-
-            var data3 = context.Data.LoadFromEnumerable<StockDataPointInput>(data2);
-
-            return data3;
-        }*/
 
         //todo
         private void SplitList(
@@ -212,7 +342,7 @@ namespace MachineLearning.Trainers
             plt.AddAnnotation($"MAE: {mae:F3} \nRMSE: {rmse:F3} \nACF: {acf:F3}", 10, -10);
 
             plt.XAxis.Label(label);
-            plt.SaveFig("console.png");
+            plt.SaveFig("console22.png");
 
         }
 
