@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import './Dropdown.css';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 export interface DropdownProps {
     options: string[],
@@ -14,10 +19,12 @@ export interface DropdownProps {
 export const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, setSelectedOption, defaultText, noDataText, className, disabled }) => {
 
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+    const [value, setSelectedValue] = useState<string>('default')
 
     const handleDropdownOptionClick = (option: string) => {
-        setIsDropdownOpen(false);
+        //setIsDropdownOpen(false);
         setSelectedOption(option);
+        setSelectedValue(option);
         //setTitle(option);
         console.log(option);
     }
@@ -40,20 +47,44 @@ export const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, set
 
     }
 
-    return (
-        <div className='dropdown'>
-            {/*<label htmlFor={className}>Male</label>*/}
-            <button className={`dropdown-button ${className}`} disabled={options.length === 0 || disabled} onClick={() => setIsDropdownOpen(isDropdownOpen ? false : true)}>
-                {getButtonTitle()}
-            </button>
+    const handleChange = (event: any) => {
+        console.log(event.target.value);
+        handleDropdownOptionClick(event.target.value);
+    };
 
-            {isDropdownOpen
-                ? (
-                    <div className="dropdown-menu">
-                        {options.map(option => renderDropdownOption(option))}
-                    </div>
-                )
-                : null}
-        </div>
+    return (
+        <>
+            <FormControl sx={{ m: 1, minWidth: 120 }}>
+                <InputLabel id="demo-simple-select-label">{defaultText}</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={value}
+                    label={defaultText}
+                    onChange={handleChange}
+                >
+                    {options.map(option => <MenuItem value={option}>{option}</MenuItem>)}
+                </Select>
+            </FormControl>
+
+
+        </>
     )
 }
+
+/* 
+<div className='dropdown'>
+                
+                <button className={`dropdown-button ${className}`} disabled={options.length === 0 || disabled} onClick={() => setIsDropdownOpen(isDropdownOpen ? false : true)}>
+                    {getButtonTitle()}
+                </button>
+
+                {isDropdownOpen
+                    ? (
+                        <div className="dropdown-menu">
+                            {options.map(option => renderDropdownOption(option))}
+                        </div>
+                    )
+                    : null}
+            </div>
+*/

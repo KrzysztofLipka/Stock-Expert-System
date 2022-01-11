@@ -6,6 +6,10 @@ import { Dropdown } from './common/Dropdown'
 import { Datepicker } from './common/Datepicker'
 import { mockedCurrentDate } from '../api/MockedApi';
 import moment from 'moment';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+
 
 export const InputPanel = (): JSX.Element => {
 
@@ -51,7 +55,8 @@ export const InputPanel = (): JSX.Element => {
     return (
         <>
             <h3>Select Ticker, Range of estimations and estimation start date.</h3>
-            <div className='input-panel'>
+            <div style={{ display: 'inline-flex' }}>
+
                 <Dropdown
                     options={tickers.avaliableTickers}
                     selectedOption={tickers.selectedTicker}
@@ -70,8 +75,15 @@ export const InputPanel = (): JSX.Element => {
                     className='avaliable_timeranges'
                     disabled={predictionModels.selectedModel === "Forecasting"}
                 />
+                <div className='prediction-date-picker'>
+                    <Datepicker
+                        className='prediction-date-picker'
+                        name={'test'}
+                        value={predictionStartDate}
+                        setDate={setStartTime}
+                        isDisabled={predictionModels.selectedModel === "Forecasting"} />
 
-                <Datepicker name={'test'} value={predictionStartDate.format('YYYY-MM-DD')} setDate={setStartTime} isDisabled={predictionModels.selectedModel === "Forecasting"} />
+                </div>
 
                 <Dropdown
                     options={predictionModels.avaliableModels}
@@ -82,12 +94,21 @@ export const InputPanel = (): JSX.Element => {
                     className='avaliable_tickers'
                 />
 
-
-
-                <button
+                <Button
+                    variant="outlined"
                     disabled={isEstimateButtonDisabled()}
-                    className={'button'}
-                    onClick={() => dispatch.predictions.loadPredictionDetails({ ticker: tickers.selectedTicker, timeRange: timeRanges.selectedRange, startDate: predictionStartDate.format() ?? null, predictionModel: predictionModels.selectedModel })}>Add</button>
+                    className={'forecast-button'}
+                    size='medium'
+                    onClick={
+                        () => dispatch.predictions.loadPredictionDetails({
+                            ticker: tickers.selectedTicker,
+                            timeRange: timeRanges.selectedRange,
+                            startDate: predictionStartDate.format()
+                                ?? null, predictionModel: predictionModels.selectedModel
+                        })}>Forcast
+                </Button>
+
+
                 <h4>Today is {mockedCurrentDate.format('YYYY-MM-DD')}</h4>
 
             </div>

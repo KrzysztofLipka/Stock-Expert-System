@@ -5,14 +5,19 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux'
 import { store } from './store/store'
-
-
+import { StyledEngineProvider } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import { styled } from '@mui/material/styles';
 
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
+
       <App />
+
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

@@ -7,7 +7,9 @@ import { splitFormattedDateOnT } from '../../utils/DateSplit'
 export interface SelectedPredictionDetails {
     ticker: string,
     predictions: PredictionPoint[],
-    id: string
+    id: string,
+    buyPrice?: PredictionPoint,
+    sellPrice?: PredictionPoint
     //actualQuotes?: PredictionPoint[]
 }
 
@@ -30,7 +32,9 @@ export interface HistoricalPrediction {
 export interface PredictionPoint {
     predictedPrice: number,
     actualPrice?: number,
-    date: string
+    date: string,
+    isSuggestedBuy?: boolean,
+    isSuggestedSell?: boolean,
 }
 
 export interface PricesState {
@@ -38,6 +42,48 @@ export interface PricesState {
     historicalPredictions: HistoricalPrediction[],
     isLoading: boolean
 }
+
+const calculateBuySellSuggestions = (predictions: PredictionPoint[]): [PredictionPoint, PredictionPoint] => {
+    //var maxA = a.reduce((a,b)=>a.y>b.y?a:b).y;
+    let minValueIndex = 0
+    let maxValueIndex = 0;
+
+
+    const minValue = predictions.reduce((a, b, index) => /*a.predictedPrice > b.predictedPrice ? a : b*/ {
+        if (a.predictedPrice < b.predictedPrice) {
+
+            return a;
+        } else {
+            minValueIndex = index
+            return b;
+        }
+    }
+    );
+
+    const maxValue = predictions.reduce((a, b, index) => /*a.predictedPrice > b.predictedPrice ? a : b*/ {
+        if (a.predictedPrice < b.predictedPrice && index > minValueIndex) {
+            maxValueIndex = index;
+            return b;
+        } else {
+
+            return a;
+        }
+    }
+    );
+
+
+
+
+    console.log(minValueIndex);
+    console.log(maxValueIndex)
+
+    if (maxValueIndex < minValueIndex) {
+        return [predictions[0], predictions[0]]
+    }
+
+    return [minValue, maxValue]
+
+};
 
 export const predictions = createModel<IRootModel>()({
     state: {
@@ -78,7 +124,14 @@ export const predictions = createModel<IRootModel>()({
                 if (prediction) {
                     console.log('add');
                     prediction.predictions.forEach(prediction => prediction.date = splitFormattedDateOnT(prediction.date));
+
                     dispatch.predictions.addCompany(prediction);
+                    const [minValue, maxValue] = calculateBuySellSuggestions(prediction.predictions);
+                    prediction.buyPrice = minValue;
+                    prediction.sellPrice = maxValue;
+
+                    console.log(minValue);
+                    console.log(maxValue);
                     const updatedHistoricalPredictions = await getHistoricalPredictions();
                     dispatch.predictions.addHistoricalPredictions(updatedHistoricalPredictions);
                 }
@@ -88,6 +141,8 @@ export const predictions = createModel<IRootModel>()({
                 dispatch.predictions.setIsLoading(false);
             }
         },
+
+
 
         async loadHistoricalPredictions() {
             dispatch.predictions.setIsLoading(true);

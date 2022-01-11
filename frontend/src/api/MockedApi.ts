@@ -232,7 +232,7 @@ export async function getTickers(): Promise<string[]> {
 
     return [
         'AAPL',
-        'RDS-A'
+        'RDS-A',
     ]
 
 }

@@ -1,11 +1,19 @@
 import React from 'react';
 import './Datepicker.css';
 
+import TextField from '@mui/material/TextField';
+import AdapterMoment from '@mui/lab/AdapterMoment';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import DatePicker from '@mui/lab/DatePicker';
+import InputLabel from '@mui/material/InputLabel';
+import moment from 'moment';
+
 
 export interface DatepickerProps {
     name: string,
+    className: string
     setDate(date: string): void,
-    value?: string,
+    value?: moment.Moment,
     isDisabled?: boolean,
 }
 
@@ -24,8 +32,29 @@ const getCurrentDate = (): string => {
 
 }
 
-export const Datepicker: React.FC<DatepickerProps> = ({ name, setDate, value, isDisabled }) => {
+export const Datepicker: React.FC<DatepickerProps> = ({ name, className, setDate, value, isDisabled }) => {
+
+    const [datepickerValue, setDatepickerValue] = React.useState(value);
+
+    const handleDateChange = (newValue: any) => {
+        setDate(newValue);
+        setDatepickerValue(newValue);
+    }
+
     return (
-        <div className='datePicker'><input type='date' name='name' defaultValue={value ? value : getCurrentDate()} onChange={(e) => setDate(e.target.value)} onClick={(e) => { console.log(e) }} disabled={isDisabled} ></input></div>
+        <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+                className={className}
+                label="Select Date"
+                value={datepickerValue}
+                onChange={(newValue) => {
+                    handleDateChange(newValue);
+                }}
+                renderInput={(params) => <TextField {...params} helperText={null} />}
+            />
+        </LocalizationProvider>
+
     )
 }
+
+//<div className='datePicker'><input type='date' name='name' defaultValue={value ? value : getCurrentDate()} onChange={(e) => setDate(e.target.value)} onClick={(e) => { console.log(e) }} disabled={isDisabled} ></input></div>
