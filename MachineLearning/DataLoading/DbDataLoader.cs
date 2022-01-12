@@ -5,12 +5,13 @@ using MachineLearning.DataModels;
 using System.Linq;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using Shared;
 
 namespace MachineLearning.DataLoading
 {
     public class DbDataLoader
     {
-        private static readonly string connectionString = 
+        private static readonly string connectionString =
             "";
         public static IDataView LoadDataFromDb(
             MLContext context, string companyName, 
@@ -39,6 +40,7 @@ namespace MachineLearning.DataLoading
             int numberOfRowsToLoad = 0
             )
         {
+            //for arima
             string sqlCommand = $"EXEC dbo.GetClosingPrices @CompanyName = '{companyName}'";
             MLContext context = new MLContext();
 
@@ -61,7 +63,7 @@ namespace MachineLearning.DataLoading
         {
             string sqlCommand = $"EXEC dbo.GetClosingPricesWithMaxDate " +
                 $"@CompanyName = '{companyName}', " +
-                $"@MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+                $"@MaxDate = '{maxDate.ToString("MM-dd-yy")}'";
             MLContext context = new MLContext();
 
             IEnumerable<StockDataPointInput> result = FetchData(context, sqlCommand);
@@ -69,6 +71,29 @@ namespace MachineLearning.DataLoading
             if (numberOfRowsToLoad != 0)
             {
                 result = result.Skip(Math.Max(0, result.Count() - numberOfRowsToLoad));
+            }
+            return result;
+
+        }
+
+        public static IEnumerable<StockDataPointInput> LoadDataFromDbFromMinDate(
+            string companyName,
+            
+            DateTime minDate,
+            int numberOfRowsToTake = 0
+            )
+        {
+            var dat = minDate.ToString("MM-dd-yy");
+            string sqlCommand = $"EXEC dbo.GetClosingPricesWithMinDate " +
+                $"@CompanyName = '{companyName}', " +
+                $"@MinDate = '{minDate.ToString("MM-dd-yy")}'";
+            MLContext context = new MLContext();
+
+            IEnumerable<StockDataPointInput> result = FetchData(context, sqlCommand);
+            
+            if (numberOfRowsToTake != 0)
+            {
+                result = result.Take(numberOfRowsToTake);
             }
             return result;
 
@@ -84,8 +109,8 @@ namespace MachineLearning.DataLoading
         {
             string sqlCommand = $"EXEC dbo.GetClosingPricesWithMinMaxDate " +
                 $"@CompanyName = '{companyName}', " +
-                $"@MinDate = '{minDate.ToString("dd-MM-yy")}' , " +
-                $"@MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+                $"@MinDate = '{minDate.ToString("MM-dd-yy")}' , " +
+                $"@MaxDate = '{maxDate.ToString("MM-dd-yy")}'";
             MLContext context = new MLContext();
 
             IEnumerable<StockDataPointInput> result = FetchData(context, sqlCommand);
@@ -96,10 +121,11 @@ namespace MachineLearning.DataLoading
 
         public static IDataView LoadDataFromDb(
             MLContext context, string companyName, 
-            out int numberOfRows,  
+            out int numberOfRows,
+            out DateTime lastUpdated,
             DateTime maxDate, int numberOfRowsToLoad = 0)
         {
-            string sqlCommand = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+            string sqlCommand = $"EXEC dbo.GetClosingPricesWithMaxDate @CompanyName = '{companyName}', @MaxDate = '{maxDate.ToString("MM-dd-yy")}'";
             
             var data = FetchData(context, sqlCommand);
 
@@ -107,6 +133,8 @@ namespace MachineLearning.DataLoading
             {
                 data = data.Skip(Math.Max(0, data.Count() - numberOfRowsToLoad));
             }
+
+            lastUpdated = data.Last().Date;
 
             numberOfRows = data.Count();
             return context.Data.LoadFromEnumerable<StockDataPointInput>(data);
@@ -120,12 +148,31 @@ namespace MachineLearning.DataLoading
         {
             string sqlCommand = $"EXEC dbo.GetClosingPricesWithMinMaxDate " +
                 $"@CompanyName = '{companyName}', " +
-                $"@MinDate = '{minDate.ToString("dd-MM-yy")}' , " +
-                $"@MaxDate = '{maxDate.ToString("dd-MM-yy")}'";
+                $"@MinDate = '{minDate.ToString("MM-dd-yy")}' , " +
+                $"@MaxDate = '{maxDate.ToString("MM-dd-yy")}'";
             var data = FetchData(context, sqlCommand);
 
             numberOfRows = data.Count();
             return context.Data.LoadFromEnumerable<StockDataPointInput>(data);
+
+        }
+
+        public static IEnumerable<HistoricalPrediction> LoadHistoricalPredictions()
+        {
+            var context = new MLContext();
+            string sqlCommand = @"SELECT [PredictionId]
+                                , d.CompanyName
+                                ,[PredictedBuyPrice]
+                                ,[PredictedSellPrice]
+                                ,[ActualBuyPrice]
+                                ,[ActualSellPrice]
+                                ,[StartDate]
+                                ,[EndDate]
+                                FROM[ExpertSystem].[dbo].[Predictions] p INNER JOIN dbo.Companies d ON p.CompanyId = d.CompanyId; ";
+            var data = FetchHistoricalPredictionData(context, sqlCommand);
+
+            //numberOfRows = data.Count();
+            return data;
 
         }
 
@@ -134,6 +181,14 @@ namespace MachineLearning.DataLoading
             DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
             IDataView dataFromDb = loader.Load(dbSource);
             return context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false);
+        }
+
+        private static IEnumerable<HistoricalPrediction> FetchHistoricalPredictionData(MLContext context, string sqlCommand)
+        {
+            DatabaseLoader loader = context.Data.CreateDatabaseLoader<HistoricalPrediction>();
+            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
+            IDataView dataFromDb = loader.Load(dbSource);
+            return context.Data.CreateEnumerable<HistoricalPrediction>(dataFromDb, reuseRowObject: false);
         }
     }
 }

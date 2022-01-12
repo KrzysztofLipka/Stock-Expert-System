@@ -11,10 +11,12 @@ using StockExpertSystemBackend.Utils;
 using Microsoft.ML.Transforms.TimeSeries;
 using MachineLearning.DataModels;
 using MachineLearning.Trainers;
+using MachineLearning.DataLoading;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System.IO;
 using StockExpertSystemBackendML.Model;
+using Shared;
 
 namespace StockExpertSystemBackend.Controllers
 
@@ -27,6 +29,8 @@ namespace StockExpertSystemBackend.Controllers
         [HttpPost]
         public ActionResult<PredictionResponse> Predict(PredictionRequest request)
         {
+            var horizon = ParseRangeToHorizon(request.Range);
+
             if (request.PredictionModel == "Forecasting")
             {
                 return GetForecastPrediction(request.Ticker, 30);
@@ -37,13 +41,26 @@ namespace StockExpertSystemBackend.Controllers
                 try
                 {
                     ForecastBySsa ssa = new ForecastBySsa();
-                    SsaForecastOutput res = ssa.Predict(request.Ticker, request.Horizon);
-                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, request.Horizon);
+                    SsaForecastOutput res = ssa.Predict(request.Ticker, horizon, request.StartDate,true);
+                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, horizon);
                     List<PredictionPoint> predictions = res.Result.Zip(dates, (result, date) => new PredictionPoint()
                     {
                         PredictedPrice = (decimal)result,
                         Date = date
                     }).ToList();
+
+                    var actualPrices = DbDataLoader.LoadDataFromDbFromMinDate(
+                       request.Ticker,
+                       request.StartDate,
+                       horizon);
+
+                    predictions = predictions.Zip(actualPrices, (predictions, actualPrice) => new PredictionPoint()
+                    {
+                        PredictedPrice = predictions.PredictedPrice,
+                        ActualPrice = (decimal)actualPrice.ClosingPrice,
+                        Date = predictions.Date
+                    }).ToList();
+
                     return new PredictionResponse()
                     {
                         Predictions = predictions,
@@ -61,12 +78,24 @@ namespace StockExpertSystemBackend.Controllers
             else if (request.PredictionModel == "ARIMA")
             {
                 try {
-                    IEnumerable<double> res  = Arima.Solve(12,5, request.Ticker, request.Horizon);
-                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, request.Horizon);
+                    IEnumerable<double> res  = Arima.Solve(10,5, request.Ticker, horizon, request.StartDate, true);
+                    List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, horizon);
                     List<PredictionPoint> predictions = res.Zip(dates, (result, date) => new PredictionPoint()
                     {
                         PredictedPrice = (decimal)result,
                         Date = date
+                    }).ToList();
+
+                    var actualPrices = DbDataLoader.LoadDataFromDbFromMinDate(
+                        request.Ticker,
+                        request.StartDate,
+                        horizon);
+
+                    predictions =  predictions.Zip(actualPrices, (predictions, actualPrice) => new PredictionPoint()
+                    {
+                        PredictedPrice = predictions.PredictedPrice,
+                        ActualPrice = (decimal)actualPrice.ClosingPrice,
+                        Date = predictions.Date
                     }).ToList();
 
                     return new PredictionResponse()
@@ -115,6 +144,8 @@ namespace StockExpertSystemBackend.Controllers
                 return res;
             }
         }
+
+        
 
         private PredictionResponse GetForecastPrediction(string ticker, int horizon) {
             MLContext ml = new MLContext();
@@ -231,19 +262,44 @@ namespace StockExpertSystemBackend.Controllers
         }
 
         [HttpGet("historical")]
-        public IEnumerable<HistoricalPredictionsResponse> GetHistoricalPredictions()
+        public IEnumerable<HistoricalPrediction> GetHistoricalPredictions()
         {
-            return new List<HistoricalPredictionsResponse>()
+            var data = DbDataLoader.LoadHistoricalPredictions();
+            /*return new List<HistoricalPredictionsResponse>()
             {
                 new HistoricalPredictionsResponse(){
-                    Ticker = "AAPL",
+                    CompanyName = "AAPL",
                     Status = "Pending",
                     StartDate  = new DateTime(2020, 11,24),
                     EndDate = new DateTime(2020, 11,28),
                     Id = "12345"
                 }
                
-            };
+            };*/
+
+            return data.ToArray();
+        }
+
+        private int ParseRangeToHorizon(string range) {
+            if (range == "1 day") {
+                return 1;
+            }
+            else if (range == "1 week")
+            {
+                return 5;
+            }
+            else if (range == "1 month")
+            {
+                return 30;
+            }
+            else if (range == "1 year")
+            {
+                return 365;
+            }
+            else 
+            {
+                return 1;
+            }
         }
 
 

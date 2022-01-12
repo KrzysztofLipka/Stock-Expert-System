@@ -48,6 +48,15 @@ export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
     }, [prices]);
 
 
+    const isRecommendation = (buyPrice: PredictionPoint | undefined, sellPrice: PredictionPoint | undefined) => {
+        console.log(buyPrice);
+        console.log(sellPrice);
+        if (!buyPrice && !sellPrice) {
+            return false;
+        }
+        return buyPrice?.date !== sellPrice?.date;
+    }
+
     const handleCheckButtonClick = () => {
         setShowActualPrices(true);
         console.log(prices);
@@ -177,7 +186,7 @@ export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
                     </div>
                     <Button
                         variant="outlined"
-                        disabled={showActualPrices}
+                        disabled={showActualPrices || !isRecommendation(prices?.buyPrice, prices?.sellPrice)}
                         className={'forecast-button'}
                         size='medium'
                         onClick={() => handleCheckButtonClick()}

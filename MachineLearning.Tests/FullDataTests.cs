@@ -46,5 +46,55 @@ namespace MachineLearning.Tests
 
 
         }
+
+        [Test]
+        public void TestAutoCorrelation()
+        {
+            
+
+            var r = Arima.PrepareInputData(inputData);
+            var data = r.Select(el => el.ClosingPrice);
+
+            List<double> autoCorrelations = new List<double>(); 
+            var ACF = MathNet.Numerics.Statistics.Mcmc.MCMCDiagnostics.ACF(data, 2, x => x * x);
+
+            for (int i = 0; i < 30; i++)
+            {
+                autoCorrelations.Add(MathNet.Numerics.Statistics.Mcmc.MCMCDiagnostics.ACF(data, i, x => x * x));
+            }
+
+            foreach (var item in autoCorrelations)
+            {
+                Console.WriteLine(item);
+            }
+
+
+        }
+
+        [Test]
+        public void TestAutoCorrelationOnNonDiffrencedData()
+        {
+
+
+            //var r = Arima.PrepareInputData(inputData);
+            var data = inputData.Select(el => el.ClosingPrice);
+
+            List<double> autoCorrelations = new List<double>();
+            var ACF = MathNet.Numerics.Statistics.Mcmc.MCMCDiagnostics.ACF(data, 2, x => x * x);
+
+            for (int i = 0; i < 30; i++)
+            {
+                autoCorrelations.Add(MathNet.Numerics.Statistics.Mcmc.MCMCDiagnostics.ACF(data, i, x => x * x));
+            }
+
+            foreach (var item in autoCorrelations)
+            {
+                Console.WriteLine(item);
+            }
+
+
+        }
+
+
     }
 }

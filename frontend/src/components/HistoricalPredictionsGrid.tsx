@@ -63,6 +63,8 @@ const profitLosesCounts = (predictions: HistoricalPrediction[]): [number, number
     return [profitsCount, losesCount]
 }
 
+
+
 const columns: any[] = [
     {
         field: 'id',

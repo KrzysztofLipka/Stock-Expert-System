@@ -26,7 +26,7 @@ namespace MachineLearning.Tests
         [Test]
         public void TestDotProduct()
         {
-            var result = ssa.Predict("AAPL", 30);
+            var result = ssa.Predict("AAPL", 30,new DateTime(), true);
 
             foreach (var item in result.Result)
             {

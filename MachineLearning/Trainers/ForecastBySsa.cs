@@ -51,7 +51,7 @@ namespace MachineLearning.Trainers
             //trainListSize = trainList.Count();
         }
 
-        private SSASolveResult Solve(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows,int horizon, bool iterateWindow, int defaultWindowSize, int trainSize) {
+        private SSASolveResult Solve(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows,int horizon, bool iterateWindow, int defaultWindowSize, int trainSize, int seriesLength) {
             var splitIndex = (int)(numberOfRows * 0.8);
 
             IDataView trainSet; //= context.Data.LoadFromEnumerable<StockDataPointInput>(trainList); 
@@ -86,7 +86,7 @@ namespace MachineLearning.Trainers
                   "Forecast",
                  "ClosingPrice",
                  windowSize: defaultWindowSize, //windowSize,
-                 seriesLength: 2*(horizon + 1),//windowSize*2, //seriesLength,
+                 seriesLength: seriesLength,//windowSize*2, //seriesLength,
                  trainSize: trainSize,
                  horizon: horizon);
 
@@ -194,6 +194,7 @@ namespace MachineLearning.Trainers
             double BestACF = 9999;//nonIterativeModel.Acf;
             int BestWindow = 9999;//nonIterativeModel.WindowSize;
             int bestDataToSkipValue = 0;
+            int seriesLength = 2 * (horizon + 1);
             SSASolveResult finalModel;
             if (interateWindow) {
                 
@@ -204,13 +205,16 @@ namespace MachineLearning.Trainers
                     var splitIndex = (int)(skippedDataForDbArray.Count() * 0.8);
                     int trainSize = splitIndex;
                     int defaultWindowSize = horizon + 1;
+                   
 
-                    if (trainSize <= defaultWindowSize * 2) {
+                    if (trainSize <= defaultWindowSize * 2 || seriesLength < defaultWindowSize) {
                         continue;
                     }
 
+                   
 
-                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true,defaultWindowSize, trainSize);
+
+                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true,defaultWindowSize, trainSize, seriesLength);
 
                     if (result.Mae < BestMAE && result.Rmse <BestRMSE/* &&  Math.Abs(result.Acf) < 0.05*/ ) {
                         BestMAE = result.Mae;
@@ -227,7 +231,7 @@ namespace MachineLearning.Trainers
 
             List<StockDataPointInput> bestSkippedDataForDbArray = dataFromDbToArray.Skip(bestDataToSkipValue).ToList();
             int finalSplitIndex = (int)(bestSkippedDataForDbArray.Count() * 0.8);
-            finalModel = Solve(context, bestSkippedDataForDbArray, bestSkippedDataForDbArray.Count(), horizon, false, BestWindow, finalSplitIndex);
+            finalModel = Solve(context, bestSkippedDataForDbArray, bestSkippedDataForDbArray.Count(), horizon, false, BestWindow, finalSplitIndex, seriesLength);
 
             
             var forecastingEngine = finalModel.Model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);

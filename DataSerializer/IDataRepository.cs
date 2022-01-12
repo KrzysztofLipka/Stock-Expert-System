@@ -13,6 +13,8 @@ namespace DataSerializer
 
         void PostStockDataPoint(StockDataPoint dataPoint);
 
+        int PostPrediction(HistoricalPrediction prediction);
+
         void PostManyStockDataPoints(IEnumerable<StockDataPointDb> dataPoint);
     }
 }

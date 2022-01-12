@@ -10,7 +10,7 @@ using Externals.Data;
 
 namespace DataSerializer
 {
-    class DataRepository : IDataRepository
+    public class DataRepository : IDataRepository
     {
         private string connectionString = "";
 
@@ -75,22 +75,63 @@ namespace DataSerializer
                 connection.Open();
                 connection.Execute(
 
-                @"EXEC dbo.Add_Price
+                    @"EXEC dbo.Add_Price
                 @CompanyName = @CompanyName, @OpeningPrice = @OpeningPrice, @ClosingPrice = @ClosingPrice, @HighestPrice = @HighestPrice, @LowestPrice = @LowestPrice, @Volume = @Volume", dataPoint);
+
+
+               
 
              
             }
+        }
 
-        //public decimal OpeningPrice { get; set; }
-        //public decimal ClosingPrice { get; set; }
-        //public decimal HighestPrice { get; set; }
-        //public decimal LowestPrice { get; set; }
-        //public long Volume { get; set; }
-        //public DateTime Time { get; set; }
+        public  int PostPrediction(HistoricalPrediction prediction)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                var predictionId = connection.QueryFirst<int>(
 
-        //public string StockName { get; set; }
+                @"EXEC dbo.Add_Prediction
+                @CompanyName = @CompanyName, 
+                @PredictedBuyPrice = @PredictedBuyPrice, 
+                @PredictedSellPrice = @PredictedSellPrice, 
+                @ActualBuyPrice = @ActualBuyPrice, 
+                @ActualSellPrice = @ActualSellPrice, 
+                @StartDate = @StartDate,
+                @EndDate = @EndDate",
+                prediction);
 
-    }
+                return predictionId;
+
+            }
+
+           
+
+            //public decimal OpeningPrice { get; set; }
+            //public decimal ClosingPrice { get; set; }
+            //public decimal HighestPrice { get; set; }
+            //public decimal LowestPrice { get; set; }
+            //public long Volume { get; set; }
+            //public DateTime Time { get; set; }
+
+            //public string StockName { get; set; }
+
+        }
+
+        public void CleanPredictions() {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                connection.Execute(
+
+                @"delete from dbo.Predictions;");
+
+               
+
+            }
+
+        }
 
         public int getCompanyId(string companyName)
         {
