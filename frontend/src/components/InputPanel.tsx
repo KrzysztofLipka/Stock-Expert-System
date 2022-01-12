@@ -54,8 +54,8 @@ export const InputPanel = (): JSX.Element => {
 
     return (
         <>
-            <h3>Select Ticker, Range of estimations and estimation start date.</h3>
-            <div style={{ display: 'inline-flex' }}>
+
+            <div className='historical-prediction-details' style={{ padding: 20, display: 'inline-flex' }} >
 
                 <Dropdown
                     options={tickers.avaliableTickers}
@@ -109,9 +109,11 @@ export const InputPanel = (): JSX.Element => {
                 </Button>
 
 
-                <h4>Today is {mockedCurrentDate.format('YYYY-MM-DD')}</h4>
+
 
             </div>
         </>
     )
 }
+
+//<h4>Today is {mockedCurrentDate.format('YYYY-MM-DD')}</h4>

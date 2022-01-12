@@ -36,9 +36,7 @@ h3 {
 }
 
 .historical-predictions {
-  padding-top: 10px;
-  display: grid;
-  grid-template-columns: 70% 30%;
+ height: 450px;
 }
 
 .table {
@@ -50,7 +48,7 @@ h3 {
 .historical-prediction-details {
   background-color: white;
   border: 2px solid #e8ecef;
-  margin-left: 10px;
+  /*margin-left: 10px;*/
 }
 
 .forecast-button{

@@ -51,11 +51,16 @@ export async function getQuotesForTicker(ticker: string, range: string): Promise
     }
 
     state.push({
-        ticker: ticker,
+        companyName: ticker,
         startDate: '11.11.1111',
         endDate: '15.11.1111',
-        id: id,
-        status: 'pending'
+        predictionId: id,
+        predictedBuyPrice: 11.11,
+        predictedSellPrice: 12.11,
+        actualBuyPrice: 12.12,
+        actualSellPrice: 22.11,
+        //id: "1"
+        //status: 'pending'
     })
 
     historicalPredictionsState.set(
@@ -75,18 +80,28 @@ export async function getQuotesForTicker(ticker: string, range: string): Promise
 
 const state: HistoricalPrediction[] = [
     {
-        ticker: 'AAPL',
+        companyName: 'AAPL',
         startDate: '10.11.2020',
         endDate: '22.11.2020',
-        id: 'i123',
-        status: 'pending'
+        predictionId: 'i123',
+        predictedBuyPrice: 11.11,
+        predictedSellPrice: 12.11,
+        actualBuyPrice: 12.12,
+        actualSellPrice: 22.11,
+        //id: "2"
+        //status: 'pending'
     },
     {
-        ticker: 'AAPL',
+        companyName: 'AAPL',
         startDate: '05.11.2020',
         endDate: '09.11.2020',
-        id: 'i124',
-        status: 'expired'
+        predictionId: 'i124',
+        predictedBuyPrice: 11.11,
+        predictedSellPrice: 12.11,
+        actualBuyPrice: 12.12,
+        actualSellPrice: 22.11,
+        //id: "3"
+        //status: 'expired'
     }
 ]
 

@@ -5,6 +5,11 @@ import '../App.css'
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
+import { RootState, Dispatch } from '../store/store';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
+import { formatAmount } from '../utils/AmountFormat';
+import { minHeight } from '@mui/system';
+
 
 interface CompanyProps {
     prices: SelectedPredictionDetails | undefined;
@@ -30,6 +35,9 @@ const getActualPriceProfit = (buyPrice: PredictionPoint, sellPrice: PredictionPo
 
 export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
 
+    const predictionModels = useSelector((state: RootState) => state.predictionModels, shallowEqual)
+    const dispatch = useDispatch<Dispatch>()
+
     const [showActualPrices, setShowActualPrices] = useState<boolean>(false)
 
     useEffect(() => {
@@ -38,6 +46,29 @@ export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
             setShowActualPrices(false);
         }
     }, [prices]);
+
+
+    const handleCheckButtonClick = () => {
+        setShowActualPrices(true);
+        console.log(prices);
+        dispatch.predictions.saveHistoricalPrediction(
+            {
+                companyName: prices?.ticker ?? "",
+                predictedBuyPrice: prices?.buyPrice?.predictedPrice ?? 0,
+                predictedSellPrice: prices?.sellPrice?.predictedPrice ?? 0,
+
+                actualBuyPrice: prices?.buyPrice?.actualPrice ?? 0,
+                actualSellPrice: prices?.sellPrice?.actualPrice ?? 0,
+                startDate: prices?.startDate ?? "",
+                endDate: prices?.endDate ?? "",
+
+
+
+
+
+            }
+        )
+    }
 
     //if (prices?.length === 0) {
     //    return <></>
@@ -71,7 +102,7 @@ export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
 
     return (
         <Stack spacing={2} direction="row">
-            <div style={{ width: '100%', height: '500px', backgroundColor: 'white', border: '2px solid #e8ecef' }}>
+            <div style={{ padding: 30, width: '100%', height: '500px', backgroundColor: 'white', border: '2px solid #e8ecef' }}>
 
                 {isLoading && <div style={{ float: 'none', height: '500px', backgroundColor: 'black', width: '100%', zIndex: 20, opacity: 0.3, position: 'absolute', right: '0', left: '0' }}>
                     <div className="lds-ring"><div></div><div></div><div></div><div></div></div>
@@ -104,17 +135,59 @@ export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
 
 
             </div>
-            <div className='historical-prediction-details'>
-                <div>{prices?.buyPrice && prices?.sellPrice && getPredictedPriceProfit(prices.buyPrice, prices.sellPrice)}</div>
-                <div>{prices?.buyPrice && prices?.sellPrice && getActualPriceProfit(prices.buyPrice, prices.sellPrice)}</div>
-                <Button
-                    variant="outlined"
-                    disabled={false}
-                    className={'forecast-button'}
-                    size='medium'
-                    onClick={() => setShowActualPrices(true)}
-                >Check</Button>
-            </div>
+
+            <Stack
+                spacing={2}
+                justifyContent="space-evenly"
+                alignItems="stretch"
+
+            >
+                <div className='historical-prediction-details'
+                    style={{
+                        minWidth: 200,
+                        minHeight: 200,
+                        paddingTop: 20
+
+                    }}
+                >
+                    <span>Predicted Price</span>
+                    <h1>{prices?.buyPrice
+                        && prices?.sellPrice
+                        && formatAmount(getPredictedPriceProfit(prices.buyPrice, prices.sellPrice))}
+                    </h1>
+                </div>
+                <div className='historical-prediction-details' style={{
+                    minWidth: 200,
+                    height: "100%",
+                    paddingTop: 20
+                }}>
+                    <div
+                        style={{
+
+                            height: 150
+
+                        }}
+                    >
+                        <span>Actual Price</span>
+                        <h1>{prices?.buyPrice
+                            && prices?.sellPrice
+                            && showActualPrices
+                            && formatAmount(getActualPriceProfit(prices.buyPrice, prices.sellPrice))}
+                        </h1>
+                    </div>
+                    <Button
+                        variant="outlined"
+                        disabled={showActualPrices}
+                        className={'forecast-button'}
+                        size='medium'
+                        onClick={() => handleCheckButtonClick()}
+                    >Check
+                    </Button>
+                </div>
+
+            </Stack>
+
+
         </Stack>
 
     )

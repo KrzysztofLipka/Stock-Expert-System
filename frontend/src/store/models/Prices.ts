@@ -1,6 +1,9 @@
 import { createModel } from '@rematch/core';
 import { IRootModel } from '../models';
-import { getQuotesForTicker, getHistoricalPredictions, getHistoricalPredictionDetails } from '../../api/MockedApi';
+import {
+    getQuotesForTicker, getHistoricalPredictions,
+    getHistoricalPredictionDetails
+} from '../../api/MockedApi';
 import repo from '../../api/Predictions.Repository';
 import { splitFormattedDateOnT } from '../../utils/DateSplit'
 
@@ -9,7 +12,9 @@ export interface SelectedPredictionDetails {
     predictions: PredictionPoint[],
     id: string,
     buyPrice?: PredictionPoint,
-    sellPrice?: PredictionPoint
+    sellPrice?: PredictionPoint,
+    startDate?: string,
+    endDate?: string,
     //actualQuotes?: PredictionPoint[]
 }
 
@@ -22,11 +27,16 @@ export interface LoadPredictionDetailsRequest {
 
 
 export interface HistoricalPrediction {
-    ticker: string,
+    companyName: string,
+    predictedBuyPrice: number,
+    predictedSellPrice: number,
+    actualBuyPrice: number,
+    actualSellPrice: number,
     startDate: string,
     endDate: string,
-    id: string,
-    status: string
+    predictionId?: string,
+    //id: string,
+    //status: string
 }
 
 export interface PredictionPoint {
@@ -105,6 +115,18 @@ export const predictions = createModel<IRootModel>()({
             }
         },
 
+        addHistoricalPrediction(state: PricesState, predictions: HistoricalPrediction) {
+            return {
+                ...state, historicalPredictions: [...state.historicalPredictions, predictions],
+            }
+        },
+
+        clearPredictions(state: PricesState) {
+            return {
+                ...state, historicalPredictions: [],
+            }
+        },
+
         setIsLoading(state: PricesState, isLoading: boolean) {
             console.log(isLoading);
             return {
@@ -127,13 +149,15 @@ export const predictions = createModel<IRootModel>()({
 
                     dispatch.predictions.addCompany(prediction);
                     const [minValue, maxValue] = calculateBuySellSuggestions(prediction.predictions);
+                    prediction.startDate = prediction.predictions[0].date;
+                    prediction.endDate = prediction.predictions[prediction.predictions.length - 1].date;
                     prediction.buyPrice = minValue;
                     prediction.sellPrice = maxValue;
 
                     console.log(minValue);
                     console.log(maxValue);
-                    const updatedHistoricalPredictions = await getHistoricalPredictions();
-                    dispatch.predictions.addHistoricalPredictions(updatedHistoricalPredictions);
+                    //const updatedHistoricalPredictions = await getHistoricalPredictions();
+                    //dispatch.predictions.addHistoricalPredictions(updatedHistoricalPredictions);
                 }
             } catch {
 
@@ -146,9 +170,52 @@ export const predictions = createModel<IRootModel>()({
 
         async loadHistoricalPredictions() {
             dispatch.predictions.setIsLoading(true);
-            const res = await getHistoricalPredictions();
-            dispatch.predictions.addHistoricalPredictions(res);
+            const res = await (await repo.getHistoricalPredictions()).parsedBody; //await getHistoricalPredictions();
+            if (res) {
+                dispatch.predictions.addHistoricalPredictions(res);
+            }
+
             dispatch.predictions.setIsLoading(false);
+        },
+
+        async saveHistoricalPrediction(prediction: HistoricalPrediction) {
+            try {
+                dispatch.predictions.setIsLoading(true);
+                console.log(prediction)
+                const res = await (await repo.savePrediction(prediction)).parsedBody;
+                console.log(res);
+                //dispatch.predictions.addHistoricalPredictions(res);
+                dispatch.predictions.setIsLoading(false);
+                if (res) {
+                    prediction.predictionId = res.toString();
+                    console.log(prediction)
+                    dispatch.predictions.addHistoricalPrediction(prediction);
+                }
+
+                return res ? res : -1;
+
+            } catch (e) {
+
+            }
+        },
+
+        async clearPredictions() {
+            try {
+                dispatch.predictions.setIsLoading(true);
+
+                const res = await (await repo.clearPredictions()).parsedBody;
+
+                dispatch.predictions.setIsLoading(false);
+                if (res) {
+
+                    dispatch.predictions.clearPredictions();
+                }
+
+                return res ? res : -1;
+
+            } catch (e) {
+
+            }
         },
 
         async loadHistoricalPredictionDetails(id: string) {
