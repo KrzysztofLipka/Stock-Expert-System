@@ -17,8 +17,8 @@ namespace MachineLearning.Trainers
         public double Rmse { get; set; }
         public double Acf { get; set; }
         public SsaForecastingTransformer Model { get; set; }
-        public int WindowSize { get; set; }
-        public int BestWindowSize { get; set; }
+        //public int WindowSize { get; set; }
+        //public int BestWindowSize { get; set; }
     }
 
     public class ForecastBySsa
@@ -51,7 +51,10 @@ namespace MachineLearning.Trainers
             //trainListSize = trainList.Count();
         }
 
-        private SSASolveResult Solve(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows,int horizon, bool iterateWindow, int defaultWindowSize, int trainSize, int seriesLength) {
+        //private SSASolveResult SolveRecursive(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows, int horizon, bool iterateWindow, int defaultWindowSize, int trainSize, int seriesLength) {
+        
+        //}
+        private SSASolveResult Solve(MLContext context, List<StockDataPointInput> dataFromDbToArray, int numberOfRows,int horizon, int defaultWindowSize, int trainSize, int seriesLength) {
             var splitIndex = (int)(numberOfRows * 0.8);
 
             IDataView trainSet; //= context.Data.LoadFromEnumerable<StockDataPointInput>(trainList); 
@@ -60,27 +63,15 @@ namespace MachineLearning.Trainers
             //int trainListSize;
 
             SplitData(context, dataFromDbToArray, out trainSet, out testSet, splitIndex);
-            //int trainSize = splitIndex; //365
-            //int seriesLength = trainSize/3; //30
            
-            //int windowSize = defaultWindowSize != 0 
-            //    ? defaultWindowSize 
-            //    : horizon+1;
-            //windowSize = windowSize <= 2 ? 2 : windowSize;
+            //double Mae;
+            //double Rmse;
+            //double Acf;
 
-            //if (seriesLength <= windowSize) {
-            //    windowSize = seriesLength - 3;
-            //}
-            
-
-            double Mae;
-            double Rmse;
-            double Acf;
-
-            double BestMAE;
-            double BestRMSE;
-            double BestACF;
-            int BestWindow = 0;
+            //double BestMAE;
+            //double BestRMSE;
+            //double BestACF;
+            //int BestWindow = 0;
 
             SsaForecastingEstimator pipeline = context.Forecasting.ForecastBySsa(
                   "Forecast",
@@ -91,75 +82,30 @@ namespace MachineLearning.Trainers
                  horizon: horizon);
 
             SsaForecastingTransformer model = pipeline.Fit(trainSet);
+          
 
             string plotLabel = $"windowsize: {defaultWindowSize}, " +
                     $"seriesLength: { 2 * (horizon + 1)}, trainSize: {trainSize}, " +
                     $"horizon: {horizon}, całkowita ilośc danych: {numberOfRows}";
 
-            Evaluate(testSet, model, context, plotLabel, out Mae, out Rmse, out Acf);
+            Evaluate(testSet, model, context, plotLabel, out double Mae, out double Rmse, out double Acf);
 
-            BestMAE = Mae;
-            BestRMSE = Rmse;
-            BestACF = Acf;
+            //BestMAE = Mae;
+            //BestRMSE = Rmse;
+            //BestACF = Acf;
 
-            for (int i = defaultWindowSize - 1; i > 2; i--)
-            {
-                
+            //int step = horizon == 365 ? 50 : 1;
 
-                int hor = i < 2 ? 2 : i;
-
-                //if (seriesLength < i)
-                //{
-                //    hor = seriesLength - 1;
-                //}
-
-                pipeline = context.Forecasting.ForecastBySsa(
-                    "Forecast",
-                   "ClosingPrice",
-                   windowSize: i,
-                   seriesLength: 2 * (i + 1),//seriesLength,
-                   trainSize: trainSize,
-                   horizon: horizon);
-
-
-
-
-                //var model = pipeline.Fit(dataFromDb);
-                 model = pipeline.Fit(trainSet);
-
-                
-
-                string plotLabel2 = $"windowsize: {i}, " +
-                    $"seriesLength: {2 * (i + 1)}, trainSize: {trainSize}, " +
-                    $"horizon: {horizon}, całkowita ilośc danych: {numberOfRows}";
-
-                Evaluate(testSet, model, context, plotLabel2, out Mae, out Rmse, out Acf);
-
-                if (Mae < BestMAE && Rmse < BestRMSE /*&&  Math.Abs(Acf) < 0.05*/)
-                {
-                    BestMAE = Mae;
-                    BestRMSE = Rmse;
-                    BestACF = Acf;
-                    BestWindow = hor;
-                    //bestTrainListSize = dataToSkip;
-                };
-
-
-                if (!iterateWindow) {
-                    break;
-                }
-            }
-
+          
             return new SSASolveResult()
             {
-                Acf = BestACF,
-                Rmse = BestRMSE,
-                Mae = BestMAE,
-                WindowSize = defaultWindowSize,
-                BestWindowSize = BestWindow,
+                Acf = Acf,
+                Rmse = Rmse,
+                Mae = Mae,
+                //WindowSize = defaultWindowSize,
+                //BestWindowSize = BestWindow,
                 Model = model
             };
-
         }
 
         public SsaForecastOutput Predict(
@@ -170,7 +116,9 @@ namespace MachineLearning.Trainers
             int numberOfRowsToLoad, 
             bool saveModel = true, 
             DateTime maxDate = new DateTime(), 
-            bool interateWindow = false) {
+            bool interateWindow = false
+            ) 
+        {
 
             int horizon = parameters.Horizon;
             var context = new MLContext();
@@ -192,46 +140,47 @@ namespace MachineLearning.Trainers
             double BestMAE = 9999;//nonIterativeModel.Mae;
             double BestRMSE = 9999;// nonIterativeModel.Rmse;
             double BestACF = 9999;//nonIterativeModel.Acf;
-            int BestWindow = 9999;//nonIterativeModel.WindowSize;
+            int BestWindow = 0;//nonIterativeModel.WindowSize;
             int bestDataToSkipValue = 0;
             int seriesLength = 2 * (horizon + 1);
+
             SSASolveResult finalModel;
             if (interateWindow) {
                 
-              
                 for (int dataToSkip = 0; dataToSkip < numberOfRowsToLoad-(horizon*2+3); dataToSkip += horizon)
                 {
-                    List<StockDataPointInput> skippedDataForDbArray = dataFromDbToArray.Skip(dataToSkip).ToList();
-                    var splitIndex = (int)(skippedDataForDbArray.Count() * 0.8);
-                    int trainSize = splitIndex;
-                    int defaultWindowSize = horizon + 1;
-                   
-
-                    if (trainSize <= defaultWindowSize * 2 || seriesLength < defaultWindowSize) {
-                        continue;
-                    }
-
-                   
-
-
-                    SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, true,defaultWindowSize, trainSize, seriesLength);
-
-                    if (result.Mae < BestMAE && result.Rmse <BestRMSE/* &&  Math.Abs(result.Acf) < 0.05*/ ) {
-                        BestMAE = result.Mae;
-                        BestRMSE = result.Rmse;
-                        BestACF = result.Acf;
-                        BestWindow = result.BestWindowSize;
-                        bestDataToSkipValue = dataToSkip;
-                    };
-
                     
+                    List<StockDataPointInput> skippedDataForDbArray = dataFromDbToArray.Skip(dataToSkip).ToList();
+                    int splitIndex = (int)(skippedDataForDbArray.Count() * 0.8);
+                    int trainSize = splitIndex;
+                    int defaultWindowSize = trainSize/2-1;
+                    int step = horizon == 365 ? 50 : 1;
+
+                    for (int windowSize = defaultWindowSize - 1; windowSize > 2; windowSize -= step)
+                    {
+                        if (trainSize <= defaultWindowSize * 2 || seriesLength < defaultWindowSize)
+                        {
+                            continue;
+                        }
+
+                        SSASolveResult result = Solve(context, skippedDataForDbArray, skippedDataForDbArray.Count(), horizon, windowSize, trainSize, seriesLength);
+
+                        if (result.Mae < BestMAE /*&& result.Rmse < BestRMSE &&  Math.Abs(result.Acf) < 0.05*/ )
+                        {
+                            BestMAE = result.Mae;
+                            BestRMSE = result.Rmse;
+                            BestACF = result.Acf;
+                            BestWindow = windowSize;
+                            bestDataToSkipValue = dataToSkip;
+                        };
+                    }          
                 }
 
             }
 
             List<StockDataPointInput> bestSkippedDataForDbArray = dataFromDbToArray.Skip(bestDataToSkipValue).ToList();
             int finalSplitIndex = (int)(bestSkippedDataForDbArray.Count() * 0.8);
-            finalModel = Solve(context, bestSkippedDataForDbArray, bestSkippedDataForDbArray.Count(), horizon, false, BestWindow, finalSplitIndex, seriesLength);
+            finalModel = Solve(context, bestSkippedDataForDbArray, bestSkippedDataForDbArray.Count(), horizon, BestWindow, finalSplitIndex, seriesLength);
 
             
             var forecastingEngine = finalModel.Model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(context);
