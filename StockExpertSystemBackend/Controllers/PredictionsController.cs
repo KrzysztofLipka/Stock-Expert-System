@@ -41,7 +41,8 @@ namespace StockExpertSystemBackend.Controllers
                 try
                 {
                     ForecastBySsa ssa = new ForecastBySsa();
-                    SsaForecastOutput res = ssa.Predict(request.Ticker, horizon, request.StartDate,true);
+                    SsaForecastOutput res = ssa.Predict(request.Ticker, horizon, request.StartDate);
+                    //ssa.Predict(request.Ticker, horizon, request.StartDate);
                     List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, horizon);
                     List<PredictionPoint> predictions = res.Result.Zip(dates, (result, date) => new PredictionPoint()
                     {
@@ -49,7 +50,8 @@ namespace StockExpertSystemBackend.Controllers
                         Date = date
                     }).ToList();
 
-                    var actualPrices = DbDataLoader.LoadDataFromDbFromMinDate(
+                    var dataLoader = new DbDataLoader();
+                    var actualPrices = dataLoader.LoadDataFromDbFromMinDate(
                        request.Ticker,
                        request.StartDate,
                        horizon);
@@ -86,7 +88,8 @@ namespace StockExpertSystemBackend.Controllers
                         Date = date
                     }).ToList();
 
-                    var actualPrices = DbDataLoader.LoadDataFromDbFromMinDate(
+                    var dataLoader = new DbDataLoader();
+                    var actualPrices = dataLoader.LoadDataFromDbFromMinDate(
                         request.Ticker,
                         request.StartDate,
                         horizon);
@@ -264,7 +267,8 @@ namespace StockExpertSystemBackend.Controllers
         [HttpGet("historical")]
         public IEnumerable<HistoricalPrediction> GetHistoricalPredictions()
         {
-            var data = DbDataLoader.LoadHistoricalPredictions();
+            var dataLoader = new DbDataLoader();
+            var data = dataLoader.LoadHistoricalPredictions();
             /*return new List<HistoricalPredictionsResponse>()
             {
                 new HistoricalPredictionsResponse(){

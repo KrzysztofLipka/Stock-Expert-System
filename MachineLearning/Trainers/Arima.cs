@@ -141,10 +141,10 @@ namespace MachineLearning.Trainers
             int numberOfRowsToLoad = horizon == 365 
                 ? horizon * 3  
                 : horizon * 10;
-            
+            var dataLoader = new DbDataLoader();
             IEnumerable<StockDataPointInput> data = maxDate < DateTime.Today  
-                ? DbDataLoader.LoadDataFromDb(companyName, out numberOfRows,maxDate, numberOfRowsToLoad)
-                : DbDataLoader.LoadDataFromDb(companyName, out numberOfRows, numberOfRowsToLoad);
+                ? dataLoader.LoadDataFromDb(companyName, out numberOfRows,maxDate, numberOfRowsToLoad)
+                : dataLoader.LoadDataFromDb(companyName, out numberOfRows, numberOfRowsToLoad);
 
 
 
@@ -155,7 +155,8 @@ namespace MachineLearning.Trainers
         {
             int numberOfRows;
             int numberOfRowsToLoad = horizon * 3;
-            IEnumerable<StockDataPointInput> data = DbDataLoader.LoadDataFromDb(
+            var dataLoader = new DbDataLoader();
+            IEnumerable<StockDataPointInput> data = dataLoader.LoadDataFromDb(
                 companyName, out numberOfRows,
                 maxDate, numberOfRowsToLoad);
 

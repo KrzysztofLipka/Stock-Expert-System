@@ -1,4 +1,7 @@
-﻿using Shared;
+﻿using System.Configuration;
+using System.Collections.Specialized;
+
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,11 +11,17 @@ using DataSerializer.Models;
 using System.Data;
 using Externals.Data;
 
+
 namespace DataSerializer
 {
     public class DataRepository : IDataRepository
     {
-        private string connectionString = "";
+        private string connectionString;
+        public DataRepository()
+        {
+            connectionString = ConfigurationManager.AppSettings.Get("connectionString");
+        }
+       
 
         public IEnumerable<StockDataPoint> GetStockDataPoints(string StockName)
         {
@@ -76,7 +85,12 @@ namespace DataSerializer
                 connection.Execute(
 
                     @"EXEC dbo.Add_Price
-                @CompanyName = @CompanyName, @OpeningPrice = @OpeningPrice, @ClosingPrice = @ClosingPrice, @HighestPrice = @HighestPrice, @LowestPrice = @LowestPrice, @Volume = @Volume", dataPoint);
+                @CompanyName = @CompanyName, 
+                @OpeningPrice = @OpeningPrice, 
+                @ClosingPrice = @ClosingPrice, 
+                @HighestPrice = @HighestPrice, 
+                @LowestPrice = @LowestPrice, 
+                @Volume = @Volume", dataPoint);
 
 
                
@@ -143,6 +157,24 @@ namespace DataSerializer
 
                 @"EXEC dbo.GetCompanyId
                 @CompanyName = @CompanyName", new {CompanyName = companyName });
+
+                return result;
+
+
+            }
+
+        }
+
+        public DateTime GetLastPriceForCompany (string companyName)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                var result =
+                connection.QueryFirst<DateTime>(
+
+                @"EXEC dbo.GetLastPriceForCompany
+                @CompanyName = @CompanyName", new { CompanyName = companyName });
 
                 return result;
 

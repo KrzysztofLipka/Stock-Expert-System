@@ -18,16 +18,21 @@ namespace MachineLearning.Trainers
 
     public class BinaryClassifier
     {
-        private IDataView PrepateInputData(MLContext context, string companyName, string indexName, out int numberOfRows, int numberOfRowsToLoad, /*out DateTime lastUpdated,*/ DateTime? requestedUpdateDate = null)
+        private IDataView PrepateInputData(
+            MLContext context, string companyName, 
+            string indexName, out int numberOfRows, 
+            int numberOfRowsToLoad,
+            int numberOfDays, int daysAhead,
+            DateTime? requestedUpdateDate = null)
         {
             int numberCompanyDataRows;
             int numberIndexDataRows;
 
-            DateTime minDate = new DateTime(2016, 5, 3);
+            DateTime minDate = new DateTime(2012, 5, 3);
             DateTime maxDate = new DateTime(2021, 5, 3);
-
-            IDataView companyData = DbDataLoader.LoadDataFromDb(context, companyName, out numberCompanyDataRows, minDate, maxDate);
-            IDataView indexData = DbDataLoader.LoadDataFromDb(context, indexName, out numberIndexDataRows, minDate, maxDate);
+            var dataLoader = new DbDataLoader();
+            IDataView companyData = dataLoader.LoadDataFromDb(context, companyName, out numberCompanyDataRows, minDate, maxDate);
+            IDataView indexData = dataLoader.LoadDataFromDb(context, indexName, out numberIndexDataRows, minDate, maxDate);
 
             var companyDataAsList = context.Data.CreateEnumerable<StockDataPointInput>(companyData, reuseRowObject: false);
             companyDataAsList = companyDataAsList.Skip(Math.Max(0, companyDataAsList.Count() - numberOfRowsToLoad));
@@ -35,7 +40,7 @@ namespace MachineLearning.Trainers
             var indexDataAsList = context.Data.CreateEnumerable<StockDataPointInput>(indexData, reuseRowObject: false);
             indexDataAsList = indexDataAsList.Skip(Math.Max(0, indexDataAsList.Count() - numberOfRowsToLoad));
 
-            var connectedData = BinaryConverter.Convert(companyDataAsList, indexDataAsList);
+            var connectedData = BinaryConverter.Convert(companyDataAsList, indexDataAsList, numberOfDays, daysAhead);
             numberOfRows = companyDataAsList.Count();
             IDataView connectedDataview = context.Data.LoadFromEnumerable<StockDataPointBinaryInput>(connectedData);
             var normalize = context.Transforms.NormalizeMeanVariance("Features",
@@ -47,13 +52,18 @@ namespace MachineLearning.Trainers
             return transformedData;
         }
 
-        public void Predict(string dataPath, string modelOuptutPath, string companyName,string indexName, int numberOfRowsToLoad) {
-            var mlContext = new MLContext();
+        public void Predict(string dataPath, string modelOuptutPath, 
+            string companyName,string indexName, 
+            int numberOfRowsToLoad, int numberOfDays, int daysAhead) {
 
-            var context = new MLContext();
+            Console.WriteLine($"*----numberOfDays: {numberOfDays}-----daysAhead: {daysAhead}------------*");
+
+            //var mlContext = new MLContext();
+
+            var context = new MLContext(seed:1);
             int numberOfRows;
             DateTime lastUpdate;
-            IDataView dataFromDb = PrepateInputData(context, companyName, indexName, out numberOfRows, numberOfRowsToLoad);
+            IDataView dataFromDb = PrepateInputData(context, companyName, indexName, out numberOfRows, numberOfRowsToLoad, numberOfDays, daysAhead);
 
 
             List<StockDataPointBinaryInput> dataFromDbToArray = context.Data.CreateEnumerable<StockDataPointBinaryInput>(dataFromDb, reuseRowObject: false).ToList();
@@ -67,6 +77,13 @@ namespace MachineLearning.Trainers
 
             var testSet = context.Data.LoadFromEnumerable<StockDataPointBinaryInput>(testList);
 
+            var pos = testList.Where(el => el.IsRising).ToList().Count();
+            var neg = testList.Where(el => !el.IsRising).ToList().Count();
+            
+
+            Console.WriteLine($"pos: {pos} neg: {neg}");
+
+
             //---------------------------------
 
             var options = new LdSvmTrainer.Options
@@ -78,21 +95,21 @@ namespace MachineLearning.Trainers
                 //LabelColumnName = "IsRising"
             };
 
-            var pipeline = mlContext.BinaryClassification.Trainers
+            var pipeline = context.BinaryClassification.Trainers
                 .LdSvm(options);
 
             var model = pipeline.Fit(trainSet);
 
             var transformedTestData = model.Transform(testSet);
-            var predictions = mlContext.Data
+            var predictions = context.Data
               .CreateEnumerable<Prediction>(transformedTestData,
               reuseRowObject: false).ToList();
 
-            foreach (var p in predictions.Take(100))
-                Console.WriteLine($"Label: {p.Label}, "
-                    + $"Prediction: {p.PredictedLabel}");
+            //foreach (var p in predictions.Take(100))
+            //    Console.WriteLine($"Label: {p.Label}, "
+            //        + $"Prediction: {p.PredictedLabel}");
 
-            var metrics = mlContext.BinaryClassification
+            var metrics = context.BinaryClassification
                 .EvaluateNonCalibrated(transformedTestData);
 
             PrintMetrics(metrics);

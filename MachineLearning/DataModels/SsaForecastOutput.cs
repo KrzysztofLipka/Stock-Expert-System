@@ -10,5 +10,10 @@ namespace MachineLearning.DataModels
         public double Mae { get; set; }
         public double Rmse { get; set; }
         public double Acf { get; set; }
+
+        public List<double> MaeList { get; set; }
+
+        public List<double> WindowList { get; set; }
+
     }
 }

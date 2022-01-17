@@ -4,10 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using StockExpertSystemBackend.Data;
 using StockExpertSystemBackend.Data.Models;
 using StockExpertSystemBackend.Utils;
@@ -69,18 +66,9 @@ namespace StockExpertSystemBackend.Controllers
         public ActionResult<IEnumerable<HistoricalPrediction>> GetHistoricalPredictions()
         {
             try {
-                var data = DbDataLoader.LoadHistoricalPredictions();
-                /*return new List<HistoricalPredictionsResponse>()
-                {
-                    new HistoricalPredictionsResponse(){
-                        CompanyName = "AAPL",
-                        Status = "Pending",
-                        StartDate  = new DateTime(2020, 11,24),
-                        EndDate = new DateTime(2020, 11,28),
-                        Id = "12345"
-                    }
-
-                };*/
+                var dataLoader = new DbDataLoader();
+                var data = dataLoader.LoadHistoricalPredictions();
+               
 
                 return data.ToArray();
             } catch(Exception e) {

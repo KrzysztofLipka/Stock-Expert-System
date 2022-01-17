@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DataSerializer": {
+      "commandName": "Project",
+      "commandLineArgs": "update nke"
+    }
+  }
+}

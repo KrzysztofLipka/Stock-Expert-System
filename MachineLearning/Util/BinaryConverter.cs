@@ -9,11 +9,14 @@ namespace MachineLearning.Util
     //todo rename
     public class BinaryConverter
     {
-        static int daysAhead = 100;
-        public static List<StockDataPointBinaryInput> Convert(IEnumerable<StockDataPointInput> input, IEnumerable<StockDataPointInput> indexInput) {
+        //static int daysAhead = 100;
+        public static List<StockDataPointBinaryInput> Convert(
+            IEnumerable<StockDataPointInput> input, 
+            IEnumerable<StockDataPointInput> indexInput,
+            int numberOfDays, int daysAhead) {
             StockDataPointInput previous = null;
             List<StockDataPointBinaryInput> result = new List<StockDataPointBinaryInput>();
-            int numberOfDays = 5;
+            //int numberOfDays = 5;
            
 
             float counter = 0;
@@ -30,14 +33,14 @@ namespace MachineLearning.Util
                 inputAsFloatListIndex.Add(inputItemIndex.ClosingPrice);
             }
 
-            List<float> momentum = CalculateMomentum(numberOfDays, inputAsFloatList);
-            List<bool> isRising = IsRising(numberOfDays, inputAsFloatList);
-            List<float> votality = CalculateVoliatility(numberOfDays, inputAsFloatList);
+            List<float> momentum = CalculateMomentum(numberOfDays, inputAsFloatList, daysAhead);
+            List<bool> isRising = IsRising(numberOfDays, inputAsFloatList, daysAhead);
+            List<float> votality = CalculateVoliatility(numberOfDays, inputAsFloatList, daysAhead);
 
 
 
-            List<float> momentumIndex = CalculateMomentum(numberOfDays, inputAsFloatListIndex);
-            List<float> votalityIndex = CalculateVoliatility(numberOfDays, inputAsFloatListIndex);
+            List<float> momentumIndex = CalculateMomentum(numberOfDays, inputAsFloatListIndex, daysAhead);
+            List<float> votalityIndex = CalculateVoliatility(numberOfDays, inputAsFloatListIndex, daysAhead);
 
             for (int i = 0; i < momentum.Count(); i++)
             {
@@ -53,13 +56,14 @@ namespace MachineLearning.Util
 
         }
 
-        private static List<float> CalculateMomentum(int numberOfDays, List<float> priceArray)
+        private static List<float> CalculateMomentum(int numberOfDays, List<float> priceArray, int daysAhead)
         {
-            //int daysAhead = 270;
             List<float> momentumList = new List<float>();
+            // lista używana do oblicznaia wartości ruchomej (z emementów obliczana jest średnia)
             List<int> movingMomentumList = new List<int>();
             for (int i = 1; i < numberOfDays + 1; i++)
             {
+                // dodanie do listy z wartościami ruchomymi
                 movingMomentumList.Add(priceArray[i] > priceArray[i - 1] ? 1 : -1);
             }
 
@@ -67,7 +71,9 @@ namespace MachineLearning.Util
 
             for (int j = numberOfDays + 1; j < priceArray.Count - daysAhead; j++)
             {
+                // usunięcie z listy z wartościami ruchomymi
                 movingMomentumList.RemoveAt(0);
+                // dodanie do listy z wartościami ruchomymi
                 movingMomentumList.Add(priceArray[j] > priceArray[j - 1] ? 1 : -1);
                 momentumList.Add((float)movingMomentumList.Average());
             }
@@ -76,7 +82,7 @@ namespace MachineLearning.Util
 
         }
         //zmiennosc
-        private static List<float> CalculateVoliatility(int numberOfDays, List<float> priceArray) {
+        private static List<float> CalculateVoliatility(int numberOfDays, List<float> priceArray, int daysAhead) {
             //int daysAhead = 270;
             List<float> voliatilityList = new List<float>();
             List<float> movingVoliatilityList = new List<float>();
@@ -102,15 +108,12 @@ namespace MachineLearning.Util
 
         }
 
-        private static List<bool> IsRising(int numberOfDays, List<float> priceArray) {
+        private static List<bool> IsRising(int numberOfDays, List<float> priceArray, int daysAhead) {
             //int daysAhead = 270;
             List<bool> isRising = new List<bool>();
             for (int i = numberOfDays; i < priceArray.Count() - daysAhead; i++)
             {
-                //todo check
-                var t = priceArray[i + daysAhead];
-                var t2 = priceArray[i];
-                isRising.Add(priceArray[i+ daysAhead] > priceArray[i]);
+                isRising.Add(priceArray[i + daysAhead] > priceArray[i]);
             }
 
             return isRising;

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.Configuration;
+using System.Collections.Specialized;
+using System;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using MachineLearning.DataModels;
@@ -7,13 +9,21 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using Shared;
 
+
 namespace MachineLearning.DataLoading
 {
     public class DbDataLoader
     {
-        private static readonly string connectionString =
-            "";
-        public static IDataView LoadDataFromDb(
+        private string connectionString;
+
+        public DbDataLoader()
+        {
+            connectionString =
+                "";
+            //ConfigurationManager.AppSettings.Get("connectionString");
+        }
+            
+        public IDataView LoadDataFromDb(
             MLContext context, string companyName, 
             out int numberOfRows, 
             out DateTime lastUpdated, 
@@ -34,7 +44,7 @@ namespace MachineLearning.DataLoading
             return context.Data.LoadFromEnumerable<StockDataPointInput>(data);
         }
 
-        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+        public IEnumerable<StockDataPointInput> LoadDataFromDb(
             string companyName,
             out int numberOfRows,
             int numberOfRowsToLoad = 0
@@ -54,7 +64,7 @@ namespace MachineLearning.DataLoading
             
         }
 
-        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+        public IEnumerable<StockDataPointInput> LoadDataFromDb(
             string companyName,
             out int numberOfRows,
             DateTime maxDate,
@@ -76,7 +86,7 @@ namespace MachineLearning.DataLoading
 
         }
 
-        public static IEnumerable<StockDataPointInput> LoadDataFromDbFromMinDate(
+        public IEnumerable<StockDataPointInput> LoadDataFromDbFromMinDate(
             string companyName,
             
             DateTime minDate,
@@ -100,7 +110,7 @@ namespace MachineLearning.DataLoading
         }
 
 
-        public static IEnumerable<StockDataPointInput> LoadDataFromDb(
+        public IEnumerable<StockDataPointInput> LoadDataFromDb(
             string companyName,
             out int numberOfRows,
             DateTime minDate,
@@ -119,7 +129,7 @@ namespace MachineLearning.DataLoading
 
         }
 
-        public static IDataView LoadDataFromDb(
+        public IDataView LoadDataFromDb(
             MLContext context, string companyName, 
             out int numberOfRows,
             out DateTime lastUpdated,
@@ -141,7 +151,7 @@ namespace MachineLearning.DataLoading
 
         }
 
-        public static IDataView LoadDataFromDb(
+        public IDataView LoadDataFromDb(
            MLContext context, string companyName,
            out int numberOfRows, DateTime minDate,
            DateTime maxDate)
@@ -157,7 +167,7 @@ namespace MachineLearning.DataLoading
 
         }
 
-        public static IEnumerable<HistoricalPrediction> LoadHistoricalPredictions()
+        public IEnumerable<HistoricalPrediction> LoadHistoricalPredictions()
         {
             var context = new MLContext();
             string sqlCommand = @"SELECT [PredictionId]
@@ -176,14 +186,14 @@ namespace MachineLearning.DataLoading
 
         }
 
-        private static IEnumerable<StockDataPointInput> FetchData(MLContext context, string sqlCommand) {
+        private IEnumerable<StockDataPointInput> FetchData(MLContext context, string sqlCommand) {
             DatabaseLoader loader = context.Data.CreateDatabaseLoader<StockDataPointInput>();
             DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);
             IDataView dataFromDb = loader.Load(dbSource);
             return context.Data.CreateEnumerable<StockDataPointInput>(dataFromDb, reuseRowObject: false);
         }
 
-        private static IEnumerable<HistoricalPrediction> FetchHistoricalPredictionData(MLContext context, string sqlCommand)
+        private IEnumerable<HistoricalPrediction> FetchHistoricalPredictionData(MLContext context, string sqlCommand)
         {
             DatabaseLoader loader = context.Data.CreateDatabaseLoader<HistoricalPrediction>();
             DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, sqlCommand);

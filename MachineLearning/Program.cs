@@ -15,7 +15,9 @@ namespace MachineLearning
 
             BinaryClassifier binary = new BinaryClassifier();
 
-            binary.Predict("1", "2", "nke", "^dji", 2000);
+            binary.Predict("1", "2", "nke", "^dji", 2000, 270, 270);
+
+            //binary.Predict("1", "2", "nke", "^dji", 2000);
 
             //binary.Predict("1", "2", "AAPL", "^ndq", 2000);
             //Console.WriteLine(i);
