@@ -20,8 +20,8 @@ Moduł ten posiada Klasę służacą do wczytywania danych z bazy oraz Klasy tre
 Obecnie jedynym w pełni działającym modułdem jest SSA. Ze względu na różne sposoby doboru parametrów wejsciowych metoda SSA ma 3 klasy:
 
 
-SSAConstantParametersTrainer - wybór stałych paemetrów które moga być wykorzystane w przypadku sezonowości.
-SSATrainSizeWindowSizeTrainer - iteracja trainSize oraz windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
-SSAWindowsSizeTrainer - iteracja windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
+[SSAConstantParametersTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSAConstantParametersTrainer.cs) - wybór stałych paemetrów które moga być wykorzystane w przypadku sezonowości.
+[SSATrainSizeWindowSizeTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSATrainSizeWindowSizeTrainer.cs) - iteracja trainSize oraz windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
+[SSAWindowsSizeTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSAWindowsSizeTrainer.cs) - iteracja windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
 
-
+Powyższe 3 klasy dziedziczą z modułu 
