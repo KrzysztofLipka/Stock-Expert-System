@@ -24,4 +24,4 @@ Obecnie jedynym w pełni działającym modułdem jest SSA. Ze względu na różn
 [SSATrainSizeWindowSizeTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSATrainSizeWindowSizeTrainer.cs) - iteracja trainSize oraz windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
 [SSAWindowsSizeTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSAWindowsSizeTrainer.cs) - iteracja windowsSize w celu wybrania rozwiązania z niajmniejszym błędem na danych testowych.
 
-Powyższe 3 klasy dziedziczą z modułu 
+Powyższe 3 klasy dziedziczą z modułu [SSATrainerBase](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSATrainerBase.cs)
