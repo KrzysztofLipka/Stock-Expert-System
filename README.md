@@ -34,5 +34,7 @@ Backend Sytemu pozwalający na udostepnienie wyników prognozy oraz historycznyc
 
 
 
+## Interfejs użytkownika
+Interfejs użytkonwika pozwalający [Link do folderu z kodem](https://github.com/KrzysztofLipka/Stock-Expert-System/tree/main/frontend) 
 
 
