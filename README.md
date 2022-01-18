@@ -1,6 +1,13 @@
 # Stock-Expert-System
 System sluży do prognozowania przyszłych kursów walut
 
+## Demo
+
+[![click to watch demo](https://img.youtube.com/vi/CkINoDuN6dw/0.jpg)](https://www.youtube.com/watch?v=CkINoDuN6dw)
+
+
+
+
 # Elementy Systemu
 ## Moduł Data Serializer
 Moduł ten jest odpowiedzialny za doawanie danych do bazy danych oraz ich aktualizację.
