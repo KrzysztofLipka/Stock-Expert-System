@@ -4,10 +4,8 @@ using System.Text;
 
 namespace MachineLearning.DataModels
 {
-    public class NbpForecastOutput
+    public class ForecastOutput
     {
         public float[] Forecast { get; set; }
-
-        //public float Score { get; set; }
     }
 }

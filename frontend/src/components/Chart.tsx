@@ -33,7 +33,7 @@ const getActualPriceProfit = (buyPrice: PredictionPoint, sellPrice: PredictionPo
     else return sellPrice?.actualPrice - buyPrice?.actualPrice;
 }
 
-export const Chart: React.FC<CompanyProps> = ({ prices, isLoading }) => {
+export const CurrentPredictionDisplay: React.FC<CompanyProps> = ({ prices, isLoading }) => {
 
     const predictionModels = useSelector((state: RootState) => state.predictionModels, shallowEqual)
     const dispatch = useDispatch<Dispatch>()

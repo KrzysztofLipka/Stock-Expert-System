@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Externals\Externals.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
-    <ProjectReference Include="..\StockExpertSystemBackendML.Model\StockExpertSystemBackendML.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>

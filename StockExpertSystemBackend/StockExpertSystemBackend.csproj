@@ -13,7 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DataSerializer\DataSerializer.csproj" />
     <ProjectReference Include="..\MachineLearning\MachineLearning.csproj" />
-    <ProjectReference Include="..\StockExpertSystemBackendML.Model\StockExpertSystemBackendML.Model.csproj" />
   </ItemGroup>
 
 

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data.SqlClient;
 using Dapper;
-using DataSerializer.Models;
 using System.Data;
 using Externals.Data;
 
@@ -19,7 +18,8 @@ namespace DataSerializer
         private string connectionString;
         public DataRepository()
         {
-            connectionString = ConfigurationManager.AppSettings.Get("connectionString");
+            //connectionString = ConfigurationManager.AppSettings.Get("connectionString");
+            connectionString = "";
         }
        
 
@@ -90,12 +90,7 @@ namespace DataSerializer
                 @ClosingPrice = @ClosingPrice, 
                 @HighestPrice = @HighestPrice, 
                 @LowestPrice = @LowestPrice, 
-                @Volume = @Volume", dataPoint);
-
-
-               
-
-             
+                @Volume = @Volume", dataPoint);       
             }
         }
 

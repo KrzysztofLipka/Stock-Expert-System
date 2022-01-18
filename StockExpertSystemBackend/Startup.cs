@@ -28,8 +28,8 @@ namespace StockExpertSystemBackend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddPredictionEnginePool<NbpData, NbpForecastOutput>()
-                .FromFile(modelName: "ForecastModel", filePath: "../../../../MLModels/forecast_model.zip", watchForChanges: true);
+            //services.AddPredictionEnginePool<NbpData, NbpForecastOutput>()
+            //    .FromFile(modelName: "ForecastModel", filePath: "../../../../MLModels/forecast_model.zip", watchForChanges: true);
             services.AddCors(options =>
             options.AddPolicy("CorsPolicy", builder =>
             builder.AllowAnyMethod()

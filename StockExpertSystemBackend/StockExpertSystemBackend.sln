@@ -9,15 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MachineLearning", "..\Machi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSerializer", "..\DataSerializer\DataSerializer.csproj", "{C4F379B2-92D5-424B-B34F-5C8F34E715F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockExpertSystemBackendML.Model", "..\StockExpertSystemBackendML.Model\StockExpertSystemBackendML.Model.csproj", "{48EAC81D-088F-450D-AC39-F6C5EF9DB836}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockExpertSystemBackendML.ConsoleApp", "..\StockExpertSystemBackendML.ConsoleApp\StockExpertSystemBackendML.ConsoleApp.csproj", "{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Externals", "..\Externals\Externals.csproj", "{862F7C40-8246-4EE8-94DD-71981ECEE2A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "..\Shared\Shared.csproj", "{DF9A57CD-C11A-41CF-814A-16F14C719228}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MachineLearning.Tests", "..\MachineLearning.Tests\MachineLearning.Tests.csproj", "{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MachineLearning.Tests", "..\MachineLearning.Tests\MachineLearning.Tests.csproj", "{49E3E014-2F4D-45F0-8A0E-3BEECD98F9CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,14 +33,6 @@ Global
 		{C4F379B2-92D5-424B-B34F-5C8F34E715F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4F379B2-92D5-424B-B34F-5C8F34E715F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4F379B2-92D5-424B-B34F-5C8F34E715F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48EAC81D-088F-450D-AC39-F6C5EF9DB836}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48EAC81D-088F-450D-AC39-F6C5EF9DB836}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48EAC81D-088F-450D-AC39-F6C5EF9DB836}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48EAC81D-088F-450D-AC39-F6C5EF9DB836}.Release|Any CPU.Build.0 = Release|Any CPU
-		{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82D0CAAD-BE32-42FA-B85C-D72F4E5507B2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{862F7C40-8246-4EE8-94DD-71981ECEE2A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{862F7C40-8246-4EE8-94DD-71981ECEE2A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{862F7C40-8246-4EE8-94DD-71981ECEE2A7}.Release|Any CPU.ActiveCfg = Release|Any CPU

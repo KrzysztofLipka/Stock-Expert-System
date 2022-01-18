@@ -100,7 +100,7 @@ export const InputPanel = (): JSX.Element => {
                     className={'forecast-button'}
                     size='medium'
                     onClick={
-                        () => dispatch.predictions.loadPredictionDetails({
+                        () => dispatch.predictions.forcast({
                             ticker: tickers.selectedTicker,
                             timeRange: timeRanges.selectedRange,
                             startDate: predictionStartDate.format()

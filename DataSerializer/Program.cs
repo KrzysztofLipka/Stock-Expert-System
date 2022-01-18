@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using DataSerializer.Models;
 using DataSerializer.ExternalServices;
 using System.Threading.Tasks;
 using System.Collections.Generic;

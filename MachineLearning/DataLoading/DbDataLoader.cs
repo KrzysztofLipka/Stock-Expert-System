@@ -22,7 +22,7 @@ namespace MachineLearning.DataLoading
                 "";
             //ConfigurationManager.AppSettings.Get("connectionString");
         }
-            
+          
         public IDataView LoadDataFromDb(
             MLContext context, string companyName, 
             out int numberOfRows, 

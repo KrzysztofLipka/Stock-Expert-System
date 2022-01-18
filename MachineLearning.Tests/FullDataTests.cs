@@ -22,7 +22,7 @@ namespace MachineLearning.Tests
         [Test]
         public void TestDotProduct()
         {
-            Arima.Solve(14, 5, inputData);
+            ArimaTrainer.Solve(14, 5, inputData);
             
 
         }
@@ -30,7 +30,7 @@ namespace MachineLearning.Tests
         [Test]
         public void TestDotProduct2()
         {
-            Arima.Solve(14, 2, inputData);
+            ArimaTrainer.Solve(14, 2, inputData);
 
 
         }
@@ -38,7 +38,7 @@ namespace MachineLearning.Tests
         [Test]
         public void TestOnDbData()
         {
-            var res = Arima.Solve(14, 2, "AAPL", 30);
+            var res = ArimaTrainer.Solve(14, 2, "AAPL", 30);
             foreach (var item in res)
             {
                 Console.WriteLine(item);
@@ -52,7 +52,7 @@ namespace MachineLearning.Tests
         {
             
 
-            var r = Arima.PrepareInputData(inputData);
+            var r = ArimaTrainer.PrepareInputData(inputData);
             var data = r.Select(el => el.ClosingPrice);
 
             List<double> autoCorrelations = new List<double>(); 

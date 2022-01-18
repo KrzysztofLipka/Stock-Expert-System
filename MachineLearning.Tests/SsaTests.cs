@@ -15,18 +15,21 @@ namespace MachineLearning.Tests
     
     class SsaTests
     {
-        ForecastBySsa ssa;
+        SSATrainSizeWindowSizeTrainer ssa;
+        SSAWindowsSizeTrainer sSAWindowsSize;
+
         [SetUp]
         public void Setup()
         {
-            ssa = new ForecastBySsa();
+            ssa = new SSATrainSizeWindowSizeTrainer();
+            sSAWindowsSize = new SSAWindowsSizeTrainer();
         }
 
        
         [Test]
         public void TestDefault()
         {
-            var result = ssa.Predict("AAPL", 30,new DateTime());
+            var result = ssa.Forcast("AAPL", 30,new DateTime());
 
             foreach (var item in result.Result)
             {
@@ -205,7 +208,7 @@ namespace MachineLearning.Tests
             DateTime maxDate = new DateTime(2020, 11, 11);
             DateTime maxDate2 = new DateTime(2019, 6, 11);
             //var result = ssa.SolveAndPlot(maxDate, "AAPL", 400, 30, 100 / 3, 100, 100, "rys9");
-            var res = ssa.Predict("", "", "AAPL", parameters, 500, false, maxDate, true, "rys9");
+            var res = ssa.Forcast("", "", "AAPL", parameters, 500, false, maxDate, true, "rys9");
         }
 
         [Test]
@@ -219,7 +222,7 @@ namespace MachineLearning.Tests
             DateTime maxDate = new DateTime(2020, 11, 11);
             DateTime maxDate2 = new DateTime(2019, 6, 11);
             //var result = ssa.SolveAndPlot(maxDate, "AAPL", 400, 30, 100 / 3, 100, 100, "rys9");
-            var res = ssa.PredictByWindowSize("", "", "AAPL", parameters, 500, false, maxDate, true, "rys10");
+            var res = sSAWindowsSize.Forcast("", "", "AAPL", parameters, 500, false, maxDate, true, "rys10");
         }
 
 

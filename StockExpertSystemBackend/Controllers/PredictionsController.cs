@@ -15,7 +15,6 @@ using MachineLearning.DataLoading;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System.IO;
-using StockExpertSystemBackendML.Model;
 using Shared;
 
 namespace StockExpertSystemBackend.Controllers
@@ -31,17 +30,14 @@ namespace StockExpertSystemBackend.Controllers
         {
             var horizon = ParseRangeToHorizon(request.Range);
 
-            if (request.PredictionModel == "Forecasting")
-            {
-                return GetForecastPrediction(request.Ticker, 30);
-            }
-
-            else if (request.PredictionModel == "SSA")
+           
+            if (request.PredictionModel.Contains("SSA"))
             {
                 try
                 {
-                    ForecastBySsa ssa = new ForecastBySsa();
-                    SsaForecastOutput res = ssa.Predict(request.Ticker, horizon, request.StartDate);
+
+                    SSATrainerBase ssa = SSATrainerFactory(request.PredictionModel);
+                    SsaForecastOutput res = ssa.Forcast(request.Ticker, horizon, request.StartDate);
                     //ssa.Predict(request.Ticker, horizon, request.StartDate);
                     List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, horizon);
                     List<PredictionPoint> predictions = res.Result.Zip(dates, (result, date) => new PredictionPoint()
@@ -80,7 +76,7 @@ namespace StockExpertSystemBackend.Controllers
             else if (request.PredictionModel == "ARIMA")
             {
                 try {
-                    IEnumerable<double> res  = Arima.Solve(10,5, request.Ticker, horizon, request.StartDate, true);
+                    IEnumerable<double> res  = ArimaTrainer.Solve(10,5, request.Ticker, horizon, request.StartDate, true);
                     List<DateTime> dates = DateUtils.EachCalendarDayInRange(request.StartDate, horizon);
                     List<PredictionPoint> predictions = res.Zip(dates, (result, date) => new PredictionPoint()
                     {
@@ -114,130 +110,14 @@ namespace StockExpertSystemBackend.Controllers
                 }
             }
 
-            else if (request.PredictionModel == "LbfgsPoissonRegression")
-            {
-                return getLbfsgRegression();
-            }
+           
             else
             {
-                var input = new ModelInput();
-                input.Col0 = "11.11.2012 00:00:00";
-                //ModelOutput output = ConsumeModel.Predict(input);
-
-                var dates = DateUtils.EachCalendarDayInRange(request.StartDate, DateUtils.ConvertDateRangeToNumberOfDays(request.Range));
-
-                var res = new PredictionResponse()
-                {
-                    Ticker = request.Ticker,
-                    Predictions = new List<PredictionPoint>(0)
-                };
-
-                foreach (var date in dates)
-                {
-                    var input1 = new ModelInput();
-                    input1.Col0 = date.ToString("MM.dd.yyyy HH:mm:ss");
-                    ModelOutput output1 = ConsumeModel.Predict(input1);
-                    res.Predictions.Add(new PredictionPoint()
-                    {
-                        PredictedPrice = (decimal)output1.Score,
-                        Date = date
-                    });
-                }
-
-                return res;
+                throw new Exception("todo");
             }
         }
 
-        
-
-        private PredictionResponse GetForecastPrediction(string ticker, int horizon) {
-            MLContext ml = new MLContext();
-            ITransformer model;
-
-            using (var file = System.IO.File.OpenRead("../../../../MLModels/SSA_rds-a_30_12.11.2021.zip"))
-                model = ml.Model.Load(file, out DataViewSchema schema);
-
-            var engine = model.CreateTimeSeriesEngine<StockDataPointInput, NbpForecastOutput>(ml);
-
-            var ress = engine.Predict();
-            Console.WriteLine(ress);
-
-            //var questions = _dataRepository.GetQuestions();
-            var res  = new PredictionResponse()
-            {
-                Ticker = ticker,
-                Predictions = new List<PredictionPoint> {
-                    /*new PredictionPoint()
-                    {
-                        PredictedPrice =  (decimal)ress.Forecast[0],
-                        Date = new DateTime(2020, 11,12)
-                    },
-                    new PredictionPoint()
-                    {
-                        PredictedPrice =  (decimal)ress.Forecast[1],
-                        Date = new DateTime(2020, 11,13)
-                    },
-                    new PredictionPoint()
-                    {
-                        PredictedPrice =  (decimal)ress.Forecast[2],
-                        Date = new DateTime(2020, 11,14)
-                    },
-                    new PredictionPoint()
-                    {
-                        PredictedPrice =  (decimal)ress.Forecast[3],
-                        Date = new DateTime(2020, 11,15)
-                    }*/
-
-                }
-            };
-
-            DateTime timeSeriesStartDate = new DateTime(2020, 11, 12);
-
-            int dateCounter = 1;
-
-            foreach (var forecast in ress.Forecast)
-            {
-                res.Predictions.Add(new PredictionPoint()
-                {
-                    PredictedPrice = (decimal)forecast,
-                    Date = timeSeriesStartDate.AddDays(dateCounter++)
-                });
-            }
-
-            return res;
-        }
-
-        private PredictionResponse getLbfsgRegression() {
-            MLContext ml = new MLContext();
-            ITransformer model;
-
-            using (var file = System.IO.File.OpenRead("../../../../MLModels/LbfgsPoissonRegression.zip"))
-                model = ml.Model.Load(file, out DataViewSchema schema);
-
-            var predictionEngine = ml.Model.CreatePredictionEngine<NbpDataRaw, NbpForecastOutput>(model);
-
-            var t = new NbpDataRaw { Date = "2021-08-28" };
-            var res = predictionEngine.Predict(t);
-
-            return new PredictionResponse()
-            {
-                Ticker = "AALP",
-                Predictions = new List<PredictionPoint> {
-                    new PredictionPoint()
-                    {
-                        PredictedPrice =  (decimal)res.Forecast[0],
-                        Date = new DateTime(2020, 11,12)
-                    }
-                }
-
-            };
-
-
-
-
-        }
-
-        [HttpGet("historicalDetails/{predictionId}")]
+        /*[HttpGet("historicalDetails/{predictionId}")]
         public ActionResult<HistoricalPredictionDetailsResponse> GetHistoricalPredictionDetails(string predictionId)
         {
             return new HistoricalPredictionDetailsResponse()
@@ -262,26 +142,20 @@ namespace StockExpertSystemBackend.Controllers
                 },
                 Id = "12345"
             };
-        }
+        }*/
 
         [HttpGet("historical")]
         public IEnumerable<HistoricalPrediction> GetHistoricalPredictions()
         {
-            var dataLoader = new DbDataLoader();
-            var data = dataLoader.LoadHistoricalPredictions();
-            /*return new List<HistoricalPredictionsResponse>()
+            try
             {
-                new HistoricalPredictionsResponse(){
-                    CompanyName = "AAPL",
-                    Status = "Pending",
-                    StartDate  = new DateTime(2020, 11,24),
-                    EndDate = new DateTime(2020, 11,28),
-                    Id = "12345"
-                }
-               
-            };*/
-
-            return data.ToArray();
+                var dataLoader = new DbDataLoader();
+                var data = dataLoader.LoadHistoricalPredictions();
+                return data.ToArray();
+            }
+            catch(Exception e) {
+                throw e;
+            }
         }
 
         private int ParseRangeToHorizon(string range) {
@@ -303,6 +177,28 @@ namespace StockExpertSystemBackend.Controllers
             else 
             {
                 return 1;
+            }
+        }
+
+        private SSATrainerBase SSATrainerFactory(string trainerName) {
+            if (trainerName.Equals("SSA (WindowsSize + TrainSize)")) {
+                return new SSATrainSizeWindowSizeTrainer();
+            }
+
+            else if (trainerName.Equals("SSA (WindowsSize)"))
+            {
+                return new SSAWindowsSizeTrainer();
+            }
+
+            else if (trainerName.Equals("SSA (Constant Parameters)"))
+            {
+                return new SSAConstantParametersTrainer();
+            }
+
+            else
+            {
+
+                throw new Exception("Wrong parameters");
             }
         }
 

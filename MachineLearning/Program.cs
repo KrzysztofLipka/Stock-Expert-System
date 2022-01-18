@@ -11,7 +11,7 @@ namespace MachineLearning
             const int horizon = 30;
 
 
-            ForecastBySsa forecast = new ForecastBySsa();
+            SSATrainSizeWindowSizeTrainer forecast = new SSATrainSizeWindowSizeTrainer();
 
             BinaryClassifier binary = new BinaryClassifier();
 
@@ -27,7 +27,7 @@ namespace MachineLearning
                 };
 
                
-             var res = forecast.Predict("../../../../MLModels/.csv",
+             var res = forecast.Forcast("../../../../MLModels/.csv",
                                 $"../../../../MLModels/SSA_{companyName}_{horizon}_", companyName,
                                 parameters,
                                 450

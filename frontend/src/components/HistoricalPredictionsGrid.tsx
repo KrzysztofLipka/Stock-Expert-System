@@ -1,5 +1,4 @@
 import { HistoricalPrediction } from '../store/models/Prices';
-import { Table, ColumnDefinitionType } from './common/Table'
 
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import { RootState, Dispatch } from '../store/store';

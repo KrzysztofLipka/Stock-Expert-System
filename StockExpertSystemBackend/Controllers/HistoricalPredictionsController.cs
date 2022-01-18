@@ -16,7 +16,6 @@ using MachineLearning.DataLoading;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using System.IO;
-using StockExpertSystemBackendML.Model;
 using Shared;
 using DataSerializer;
 

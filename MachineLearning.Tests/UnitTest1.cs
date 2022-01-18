@@ -58,7 +58,7 @@ namespace MachineLearning.Tests
 
         }
 
-        [Test]
+        /*[Test]
         public void Test1()
         {
             var expectedResult = new List<ArimaData> {
@@ -96,7 +96,7 @@ namespace MachineLearning.Tests
             Assert.That(resultAsFloatList, Is.EquivalentTo(expectedResultAsFloatList));
             
 
-        }
+        }*/
 
 
         [Test]
@@ -126,7 +126,7 @@ namespace MachineLearning.Tests
 
 
 
-            var result = Arima.ShiftFloat(1, testData);
+            var result = ArimaTrainer.Shift(1, testData);
 
             foreach (var item in result)
             {
@@ -151,7 +151,7 @@ namespace MachineLearning.Tests
                 new List<float> {0, 1.111f, 1.222f, 1.333f, 1.444f, 1.555f, 1.666f },
                 new List<float> {0, 0, 1.111f, 1.222f, 1.333f, 1.444f, 1.555f }
             };
-            var res = Arima.CreateLaggedVectors(2, laggedVectorsTestData);
+            var res = ArimaTrainer.CreateLaggedVectors(2, laggedVectorsTestData);
             foreach (var item in res)
             {
                 foreach (var item2 in item)
@@ -176,8 +176,8 @@ namespace MachineLearning.Tests
                 new List<float> {1.555f, 1.666f },
                 new List<float> {1.444f, 1.555f }
             };
-            var laggedVectors = Arima.CreateLaggedVectors(2, laggedVectorsTestData);
-            var splitedLaggedVectors = Arima.SplitLaggedVectors(laggedVectors, 5);
+            var laggedVectors = ArimaTrainer.CreateLaggedVectors(2, laggedVectorsTestData);
+            var splitedLaggedVectors = ArimaTrainer.SplitLaggedVectors(laggedVectors, 5);
             foreach (var item in splitedLaggedVectors[0])
             {
                 foreach (var item2 in item)
@@ -205,9 +205,9 @@ namespace MachineLearning.Tests
                 new List<float> {1.111f, 1.222f, 1.333f }
 
             };
-            var laggedVectors = Arima.CreateLaggedVectors(2, laggedVectorsTestData);
-            var splitedLaggedVectorsTrain = Arima.SplitLaggedVectors(laggedVectors, 5)[0];
-            var nonZeroLaggedVectors = Arima.DropZeros(2, splitedLaggedVectorsTrain);
+            var laggedVectors = ArimaTrainer.CreateLaggedVectors(2, laggedVectorsTestData);
+            var splitedLaggedVectorsTrain = ArimaTrainer.SplitLaggedVectors(laggedVectors, 5)[0];
+            var nonZeroLaggedVectors = ArimaTrainer.DropZeros(2, splitedLaggedVectorsTrain);
             foreach (var item in nonZeroLaggedVectors)
             {
                 foreach (var item2 in item)
@@ -244,7 +244,7 @@ namespace MachineLearning.Tests
 
 
 
-            var result = Arima.SplitToTrainTestData(2, laggedVectorsTestData, 5);
+            var result = ArimaTrainer.SplitToTrainTestData(2, laggedVectorsTestData, 5);
 
             foreach (var item in result.yTrain)
             {
@@ -267,9 +267,9 @@ namespace MachineLearning.Tests
         public void  TestAutoRegression()
         {
             //var result = Arima.SplitToTrainTestData(2, laggedVectorsTestData, 5);
-            var splitedDataSet = Arima.SplitToTrainTestData(4, laggedVectorsTestData, 4);
+            var splitedDataSet = ArimaTrainer.SplitToTrainTestData(4, laggedVectorsTestData, 4);
 
-            var res = Arima.AutoRegression(2, laggedVectorsTestData,splitedDataSet);
+            var res = ArimaTrainer.AutoRegression(splitedDataSet);
 
 
             //Console.WriteLine(res);
@@ -331,9 +331,9 @@ namespace MachineLearning.Tests
                 { 1.222, 1.111 },  {1.333, 1.222 }, {1.444, 1.333 },
             };
 
-            var splitedDataSet = Arima.SplitToTrainTestData(2, laggedVectorsTestData, 5);
+            var splitedDataSet = ArimaTrainer.SplitToTrainTestData(2, laggedVectorsTestData, 5);
 
-            var result = Arima.Transpose(splitedDataSet.xTrain);
+            var result = ArimaTrainer.Transpose(splitedDataSet.xTrain);
 
             foreach (var item in result)
             {
@@ -425,7 +425,7 @@ namespace MachineLearning.Tests
         {
             double[] arr1 = new double[] { 1, 1, 2, 3, 4, 5 };
             double[] arr2 = new double[]       { 2, 3, 4, 2 };
-            var res = Arima.SumArraysWithDiffrentSize(arr1, arr2);
+            var res = ArimaTrainer.SumArraysWithDiffrentSize(arr1, arr2);
             double[] expectedRes = new double[] { 0, 0, 4, 6, 8, 7 };
             foreach (var item in res)
             {

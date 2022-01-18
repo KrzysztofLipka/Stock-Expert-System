@@ -9,12 +9,12 @@ namespace MachineLearning.Util
     {
         public static double[][] DotProduct(double[][] FirstInputMatrix, double[][] SecondInputMatrix)
         {
-            return FirstInputMatrix.Select( // goes through <lhs> row by row
+            return FirstInputMatrix.Select( 
             (row, rowIndex) =>
-            SecondInputMatrix[0].Select( // goes through first row of <rhs> cell by cell
+            SecondInputMatrix[0].Select( 
                 (_, columnIndex) =>
-                SecondInputMatrix.Select(__ => __[columnIndex]) // selects column from <rhs>
-                    .Zip(row, (rowCell, columnCell) => rowCell * columnCell).Sum() // does scalar product
+                SecondInputMatrix.Select(__ => __[columnIndex]) 
+                    .Zip(row, (rowCell, columnCell) => rowCell * columnCell).Sum() 
                 ).ToArray()
             ).ToArray();
         }

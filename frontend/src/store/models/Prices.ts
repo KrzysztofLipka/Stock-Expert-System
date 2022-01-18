@@ -136,7 +136,7 @@ export const predictions = createModel<IRootModel>()({
     },
 
     effects: (dispatch: any) => ({
-        async loadPredictionDetails(request: LoadPredictionDetailsRequest) {
+        async forcast(request: LoadPredictionDetailsRequest) {
             //dispatch.prices.addCompany([])
             dispatch.predictions.setIsLoading(true);
             //const prediction: SelectedPredictionDetails = await getQuotesForTicker(request.ticker, request.timeRange);

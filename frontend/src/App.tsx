@@ -1,7 +1,7 @@
 import './App.css';
 import { useSelector, shallowEqual } from 'react-redux'
 import { RootState } from './store/store';
-import { Chart } from './components/Chart'
+import { CurrentPredictionDisplay } from './components/Chart'
 import { Header } from './components/Header'
 import { InputPanel } from './components/InputPanel';
 import { HistoricalPredictionsGrid } from './components/HistoricalPredictionsGrid'
@@ -30,7 +30,7 @@ function App() {
           <div className='app-wraper'>
             <Stack spacing={2}>
               <InputPanel />
-              <Chart prices={predictions.selectedPrediction} isLoading={predictions.isLoading} />
+              <CurrentPredictionDisplay prices={predictions.selectedPrediction} isLoading={predictions.isLoading} />
               <HistoricalPredictionsGrid predictions={predictions.historicalPredictions} />
             </Stack>
           </div>

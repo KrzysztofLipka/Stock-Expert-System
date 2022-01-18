@@ -243,7 +243,7 @@ export async function getHistoricalPredictionDetails(id: string): Promise<Select
 
 export async function getTickers(): Promise<string[]> {
     console.log('mocked call for tickers');
-    await delay(3000);
+    await delay(1000);
 
     return [
         'AAPL',
@@ -255,10 +255,10 @@ export async function getTickers(): Promise<string[]> {
 
 export async function getPredictionModels(): Promise<string[]> {
     console.log('mocked call for prediction models');
-    await delay(3000);
+    await delay(1000);
 
     return [
-        'Forecasting', 'Mocked Model', 'ARIMA', 'SSA'
+        'SSA (WindowsSize + TrainSize)', 'SSA (WindowsSize)', 'SSA (Constant Parameters)', 'ARIMA'
     ]
 
 }

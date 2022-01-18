@@ -46,7 +46,7 @@ namespace MachineLearning.Trainers
         public double[] predictedValues;
     }
 
-    public class ArimaAutoRegressionResult {
+    public class CalculateCoefficientsResult {
         public List<double> PredictedTrainValues { get; set; }
         public List<double> PredictedTestValues { get; set; }
         public double RMSE { get; set; }
@@ -59,7 +59,7 @@ namespace MachineLearning.Trainers
 
     }
 
-    public class ArimaMovingAverageResult
+    /*public class ArimaMovingAverageResult
     {
         public List<double> PredictedTrainValues { get; set; }
         public List<double> PredictedTestValues { get; set; }
@@ -69,16 +69,16 @@ namespace MachineLearning.Trainers
         public double[][] XTrain { get; set; }
         public double[][] XTest { get; set; }
         public double[][] Coefficients { get; set; }
-    }
+    }*/
 
 
-    public static class Arima
+    public static class ArimaTrainer
     {
         public static List<List<double>> CreateLaggedVectors(int p, List<ArimaData> df) {
             List<List<double>> laggedVectors = new List<List<double>>();
             for (int i = 1; i < p+1; i++)
             {
-                var shifted = ShiftFloat(i, df);
+                var shifted = Shift(i, df);
                 laggedVectors.Add(shifted);
             }
 
@@ -91,7 +91,7 @@ namespace MachineLearning.Trainers
             List<List<double>> laggedVectors = new List<List<double>>();
             for (int i = 1; i < p + 1; i++)
             {
-                var shifted = ShiftFloat(i, df);
+                var shifted = Shift(i, df);
                 laggedVectors.Add(shifted);
             }
 
@@ -114,15 +114,15 @@ namespace MachineLearning.Trainers
         public static RevertingResult RevertToOrginalData(double[] predictions,double[] orginalDiffrencedValues, IEnumerable<double> orginalValues)
         {
             //todo simplify
-            var inputLogOrg = ShiftDouble(1, orginalValues.Select(row => Math.Log(row)));
+            var inputLogOrg = Shift(1, orginalValues.Select(row => Math.Log(row)));
             var sumOfPredictedOrginalValuesAndInputLog = SumArraysWithDiffrentSize(orginalDiffrencedValues, inputLogOrg.ToArray());
-            var inputLog2Org = ShiftDouble(12, MatrixHelpers.CalculateDiffrence(orginalValues.Select(row => Math.Log(row)).ToList(), 1));
+            var inputLog2Org = Shift(12, MatrixHelpers.CalculateDiffrence(orginalValues.Select(row => Math.Log(row)).ToList(), 1));
             var sumOfPredictedOrginalValuesAndInputLog2 = SumArraysWithDiffrentSize(sumOfPredictedOrginalValuesAndInputLog.ToArray(), inputLog2Org.ToArray());
 
 
-            var inputLog = ShiftDouble(1,orginalValues.Select(row => Math.Log(row)));
+            var inputLog = Shift(1,orginalValues.Select(row => Math.Log(row)));
             var sumOfPredictedValuesAndInputLog = SumArraysWithDiffrentSize(predictions, inputLog.ToArray());
-            var inputLog2 = ShiftDouble(12,MatrixHelpers.CalculateDiffrence(orginalValues.Select(row => Math.Log(row)).ToList(),1));
+            var inputLog2 = Shift(12,MatrixHelpers.CalculateDiffrence(orginalValues.Select(row => Math.Log(row)).ToList(),1));
             var sumOfPredictedValuesAndInputLog2 = SumArraysWithDiffrentSize(sumOfPredictedValuesAndInputLog.ToArray(), inputLog2.ToArray());
 
             sumOfPredictedOrginalValuesAndInputLog2 = sumOfPredictedOrginalValuesAndInputLog2.Skip(orginalValues.Count() - predictions.Count()).Select(el => Math.Exp(el)).ToArray();
@@ -181,16 +181,16 @@ namespace MachineLearning.Trainers
             int selectedQ = q;
 
             ArimaTrainTestSplittedData splitedDataSet;
-            ArimaAutoRegressionResult autoRegressionResult;
+            CalculateCoefficientsResult autoRegressionResult;
 
             if (interateParameters) {
                 splitedDataSet = SplitToTrainTestData(1, dfLog, arSpitIndex);
-                autoRegressionResult = AutoRegression(1, dfLog, splitedDataSet);
+                autoRegressionResult = AutoRegression(splitedDataSet);
                 double RMSE = autoRegressionResult.RMSE;
                 for (int i = 2; i < p; i++)
                 {
                     var splitedDataSetOption = SplitToTrainTestData(i, dfLog, arSpitIndex);
-                    var autoRegressionResultOption = AutoRegression(i, dfLog, splitedDataSetOption);
+                    var autoRegressionResultOption = AutoRegression(splitedDataSetOption);
                     if (autoRegressionResultOption.RMSE < RMSE)
                     {
                         splitedDataSet = splitedDataSetOption;
@@ -204,11 +204,8 @@ namespace MachineLearning.Trainers
             else
             {
                 splitedDataSet = SplitToTrainTestData(selectedP, dfLog, arSpitIndex);
-                autoRegressionResult = AutoRegression(selectedP, dfLog, splitedDataSet);
+                autoRegressionResult = AutoRegression(splitedDataSet);
             };
-
-
-
 
             //todo
             List<double> skippedInitialValues = dfLog.Skip(selectedP+13).Select(x => x.ClosingPrice).ToList();
@@ -223,17 +220,17 @@ namespace MachineLearning.Trainers
             //ArimaTrainTestSplittedData movingAverageSplittedDataSet = SplitToTrainTestData(q, residuals.Select(res =>res).ToList(), maSpitIndex, false);
             //ArimaMovingAverageResult movingAverageResult = MovingAverage(q, residuals, movingAverageSplittedDataSet);
             ArimaTrainTestSplittedData movingAverageSplittedDataSet;
-            ArimaMovingAverageResult movingAverageResult;
+            CalculateCoefficientsResult movingAverageResult;
             if (interateParameters)
             {
                 movingAverageSplittedDataSet = SplitToTrainTestData(1, residuals.Select(res => res).ToList(), maSpitIndex, false);
-                movingAverageResult = MovingAverage(1, residuals, movingAverageSplittedDataSet);
+                movingAverageResult = AutoRegression(movingAverageSplittedDataSet);
                 double MAE = movingAverageResult.MAE;
 
                 for (int i = 2; i < q; i++)
                 {
                     var splitedDataSetOption = SplitToTrainTestData(i, residuals.Select(res => res).ToList(), maSpitIndex, false);
-                    var movingAverageResultOption = MovingAverage(i, residuals, movingAverageSplittedDataSet);
+                    var movingAverageResultOption = AutoRegression(movingAverageSplittedDataSet);
                     if (movingAverageResultOption.MAE < MAE)
                     {
                         splitedDataSet = splitedDataSetOption;
@@ -247,7 +244,7 @@ namespace MachineLearning.Trainers
             }
             else {
                 movingAverageSplittedDataSet = SplitToTrainTestData(selectedQ, residuals.Select(res => res).ToList(), maSpitIndex, false);
-                movingAverageResult = MovingAverage(selectedQ, residuals, movingAverageSplittedDataSet);
+                movingAverageResult = AutoRegression(movingAverageSplittedDataSet);
             }
             
 
@@ -353,26 +350,20 @@ namespace MachineLearning.Trainers
             return df.Zip(autoRegressionResult, (x, y) => x - y).ToArray();
         }
 
-        public static ArimaMovingAverageResult MovingAverage(int q, double[] residuals, ArimaTrainTestSplittedData data) {
+        /*public static ArimaMovingAverageResult MovingAverage(int q, double[] residuals, ArimaTrainTestSplittedData data) {
        
             double[][] xTrainAsArray = data.xTrain.Select(column => column.ToArray()).ToArray();
-
             double[][] xTrainArr = Transpose(data.xTrain);
-
             double[] yTrainAsAray = data.yTrain.ToArray();
-
             double[] r = Fit.MultiDim(xTrainArr, yTrainAsAray);
 
             var transposedXTrain = Transpose(data.xTrain);
-
             var transposedRegressionResult = Transpose(r);
 
             var dotP = MatrixHelpers.DotProduct(transposedXTrain, transposedRegressionResult);
 
             var transposedXTest = Transpose(data.xTest);
-
             var testDotp = MatrixHelpers.DotProduct(transposedXTest, transposedRegressionResult);
-
             var testDotpAsList = testDotp.Select(item => item[0]);
 
             var metrics = testDotpAsList.Zip(data.yTest, (actualValue, forecastValue) => actualValue - forecastValue);
@@ -392,25 +383,17 @@ namespace MachineLearning.Trainers
                 Coefficients = transposedRegressionResult,
                 PredictedTestValues = testDotpAsList.ToList()
             };
-        } 
+        } */
 
-        public static ArimaAutoRegressionResult AutoRegression(int p, List<ArimaData> df, ArimaTrainTestSplittedData data) {
+        public static CalculateCoefficientsResult AutoRegression(ArimaTrainTestSplittedData data) {
             double[][] xTrainAsArray = data.xTrain.Select(column => column.ToArray()).ToArray();
-
             double[][] xTrainArr = Transpose(data.xTrain);
-
             double[] yTrainAsAray = data.yTrain.ToArray();
+            double[] r = Fit.MultiDim(xTrainArr, yTrainAsAray);
 
             var transposedXTrain = Transpose(data.xTrain);
-
-            double[] r = Fit.MultiDim(xTrainArr, yTrainAsAray);
-            Console.WriteLine("r");
-            foreach (var item in r)
-            {
-                Console.WriteLine(item);
-            }
-
             var transposedRegressionResult = Transpose(r);
+            
             var dotP = MatrixHelpers.DotProduct(transposedXTrain, transposedRegressionResult);
             var transposedXTest = Transpose(data.xTest);
             var testDotp = MatrixHelpers.DotProduct(transposedXTest, transposedRegressionResult);
@@ -420,7 +403,7 @@ namespace MachineLearning.Trainers
             var MAE = metrics.Average(error => Math.Abs(error)); // Mean Absolute Error
             var RMSE = Math.Sqrt(metrics.Average(error => Math.Pow(error, 2))); // Root Mean Squared Error
 
-            return new ArimaAutoRegressionResult()
+            return new CalculateCoefficientsResult()
             {
                 RMSE = RMSE,
                 MAE = MAE,
@@ -582,22 +565,9 @@ namespace MachineLearning.Trainers
 
         }
 
-        public static List<ArimaData> Shift(int periods ,List<ArimaData> df) {
-            double[] b = new double[periods];
-            
-            List<double> closingPrices = df
-                .Select(row => row.ClosingPrice)
-                .Skip(periods).ToList();
-            closingPrices.InsertRange(0, new double[periods]);
-            //df.ForEach(row => row.ClosingPrice = closingPri)
-            return df.Zip(closingPrices, (oldPrice, price) => new ArimaData()
-            {
-                ClosingPrice = price,
-                Date = oldPrice.Date
-            }).ToList();
-        }
+    
 
-        public static List<double> ShiftFloat(int periods, List<ArimaData> df)
+        public static List<double> Shift(int periods, List<ArimaData> df)
         {
             double[] b = new double[periods];
 
@@ -608,8 +578,8 @@ namespace MachineLearning.Trainers
             var res = closingPrices.SkipLast(periods);
             return res.ToList();
         }
-        //todo rename
-        public static List<double> ShiftFloat(int periods, IEnumerable<double> df)
+
+        public static List<double> Shift(int periods, IEnumerable<double> df)
         {
             double[] b = new double[periods];
             //todo
@@ -620,15 +590,5 @@ namespace MachineLearning.Trainers
             return res.ToList();
         }
 
-        public static List<double> ShiftDouble(int periods, IEnumerable<double> df)
-        {
-            double[] b = new double[periods];
-
-            List<double> closingPrices = df
-                .Select(row => row).ToList();
-            closingPrices.InsertRange(0, new double[periods]);
-            var res = closingPrices.SkipLast(periods);
-            return res.ToList();
-        }
     }
 }
