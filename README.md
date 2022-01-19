@@ -20,11 +20,11 @@ Drugi to nazwa Społki dla ktorej mają byc pobrane dane, nazwa spółki musi by
 Dane pobrane sa z serwisu STOQQ w postaci pliku CSV.
 Ponadto moduł słuzy do zapisania hisotrycznych transakcji (z poza funkcji min przez inne moduły).
 
-## Moduł MachinleLearning
+## Moduł MachineLearning
 
 Moduł ten posiada Klasę służacą do wczytywania danych z bazy oraz Klasy treningowe dla algorytmów takich jak SSA ARIMA oraz SVM
 
-Obecnie jedynym w pełni działającym modułdem jest SSA. Ze względu na różne sposoby doboru parametrów wejsciowych metoda SSA ma 3 klasy:
+Obecnie jedynym w pełni działającym Algorytmem jest SSA. Ze względu na różne sposoby doboru parametrów wejsciowych metoda SSA ma 3 klasy:
 
 
 [SSAConstantParametersTrainer](https://github.com/KrzysztofLipka/Stock-Expert-System/blob/main/MachineLearning/Trainers/SSAConstantParametersTrainer.cs) - wybór stałych paemetrów które moga być wykorzystane w przypadku sezonowości.
@@ -42,6 +42,6 @@ Backend Sytemu pozwalający na udostepnienie wyników prognozy oraz historycznyc
 
 
 ## Interfejs użytkownika
-Interfejs użytkonwika pozwalający [Link do folderu z kodem](https://github.com/KrzysztofLipka/Stock-Expert-System/tree/main/frontend) 
+Interfejs użytkonwika pozwalający na wybór społki do prognozy  i wyświetlanie danych [Link do folderu z kodem](https://github.com/KrzysztofLipka/Stock-Expert-System/tree/main/frontend) 
 
 
